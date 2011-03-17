@@ -1,11 +1,11 @@
-<org.jvnet.hudson.plugins.periodicbackup.BackupObject>
-  <fileManager class="org.jvnet.hudson.plugins.periodicbackup.FullBackup">
-    <restorePolicy class="org.jvnet.hudson.plugins.periodicbackup.ReplaceRestorePolicy"/>
+<org.jenkinsci.plugins.periodicbackup.BackupObject>
+  <fileManager class="org.jenkinsci.plugins.periodicbackup.FullBackup">
+    <restorePolicy class="org.jenkinsci.plugins.periodicbackup.ReplaceRestorePolicy"/>
   </fileManager>
-  <storage class="org.jvnet.hudson.plugins.periodicbackup.ZipStorage"/>
-  <location class="org.jvnet.hudson.plugins.periodicbackup.LocalDirectory">
+  <storage class="org.jenkinsci.plugins.periodicbackup.ZipStorage"/>
+  <location class="org.jenkinsci.plugins.periodicbackup.LocalDirectory">
     <enabled>true</enabled>
     <path>c:\Temp</path>
   </location>
   <timestamp>1970-01-01 01:00:00.123 CET</timestamp>
-</org.jvnet.hudson.plugins.periodicbackup.BackupObject>
+</org.jenkinsci.plugins.periodicbackup.BackupObject>
