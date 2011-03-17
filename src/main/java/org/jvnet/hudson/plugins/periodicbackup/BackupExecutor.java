@@ -55,8 +55,8 @@ public class BackupExecutor {
         }
 
         File backupObjectFile;
-        Date timestamp = new Date(); // Timestamp for the BackupObject
-        String fileNameBase = Util.generateFileNameBase(timestamp);
+        Date timestamp;
+        String fileNameBase;
 
         // timeThreshold is used to compare timestamps of backups in each location.
         // Older backups will be deleted after creating the backup.
@@ -65,6 +65,9 @@ public class BackupExecutor {
 
         // Creating backup archives for each storage defined
         for (Storage storage : storages) {
+            timestamp = new Date(); // Timestamp for the BackupObject
+            fileNameBase = Util.generateFileNameBase(timestamp);
+
             storage.backupStart(tempDirectory, fileNameBase);
             for (File fileToBackup : filesToBackup) {
                 storage.backupAddFile(fileToBackup);

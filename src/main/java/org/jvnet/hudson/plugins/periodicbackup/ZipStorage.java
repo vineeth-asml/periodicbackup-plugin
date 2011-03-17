@@ -36,6 +36,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -158,7 +159,9 @@ public class ZipStorage extends Storage {
     private void createNewArchive() {
         try {
             archiver.createArchive();
-        } catch (Exception e) {
+        } catch (IOException e) {
+            LOGGER.warning("Could not create archive " + archiver.getDestFile() + " " + e.getMessage());
+        } catch (ArchiverException e) {
             LOGGER.warning("Could not create archive " + archiver.getDestFile() + " " + e.getMessage());
         }
         archives.add(archiver.getDestFile());
