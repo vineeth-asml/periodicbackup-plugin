@@ -24,14 +24,15 @@
 
 package org.jenkinsci.plugins.periodicbackup;
 
+import antlr.ANTLRException;
 import hudson.Extension;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import org.codehaus.plexus.archiver.ArchiverException;
 
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.logging.Logger;
+import hudson.scheduler.CronTab;
 
 /**
  *
@@ -49,56 +50,34 @@ public class PeriodicBackup extends AsyncPeriodicWork {
 
     @Override
     protected void execute(TaskListener taskListener) {
-        BackupExecutor executor = new BackupExecutor();
-        PeriodicBackupLink link = PeriodicBackupLink.get();
         try {
-            executor.backup(link.getFileManagerPlugin(), link.getStorages(),  link.getLocations(), link.getTempDirectory(), link.getCycleQuantity(), link.getCycleDays());
-        } catch (PeriodicBackupException e) {
-            LOGGER.warning("Backup failure " + e.getMessage());
-
-        } catch (IOException e) {
-            LOGGER.warning("Backup failure " + e.getMessage());
-        } catch (ArchiverException e) {
-            LOGGER.warning("Backup failure " + e.getMessage());
-        }
-        finally {
-            // Setting message to an empty String will make the "Creating backup..." message disappear in the UI
-            link.setMessage("");
+            PeriodicBackupLink link = PeriodicBackupLink.get();
+            CronTab cronTab = new CronTab(link.getCron());
+            long currentTime = System.currentTimeMillis();
+            if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0) {
+                BackupExecutor executor = new BackupExecutor();
+                try {
+                    executor.backup(link.getFileManagerPlugin(), link.getStorages(), link.getLocations(), link.getTempDirectory(), link.getCycleQuantity(), link.getCycleDays());
+                } catch (PeriodicBackupException e) {
+                    LOGGER.warning("Backup failure " + e.getMessage());
+                } catch (IOException e) {
+                    LOGGER.warning("Backup failure " + e.getMessage());
+                } catch (ArchiverException e) {
+                    LOGGER.warning("Backup failure " + e.getMessage());
+                } finally {
+                    // Setting message to an empty String will make the "Creating backup..." message disappear in the UI
+                    link.setMessage("");
+                }
+            }
+        } catch (ANTLRException e) {
+            LOGGER.warning("Could not parse given cron tab! " + e.getMessage());
         }
     }
 
     @Override
     public long getRecurrencePeriod() {
-        // Setting the backup frequency to the amount of hours given in the configuration page.
-        // If the value is not correct the frequency will be set to one year.
-        PeriodicBackupLink link = PeriodicBackupLink.get();
-        if (link != null && link.getPeriod() > 0) {
-            return link.getPeriod() * HOUR;
-        } else {
-            return 365 * DAY;
-        }
-    }
-
-    @Override
-    public long getInitialDelay() {
-        PeriodicBackupLink link = PeriodicBackupLink.get();
-        int time = link.getInitialHourOfDay();
-
-        // Find the current date
-        Calendar calendar = Calendar.getInstance();
-        long currentTimeStamp = System.currentTimeMillis();
-
-        // Get time time of the next occurrence of the specified time
-        if(calendar.get(Calendar.HOUR_OF_DAY) >= time) {
-            calendar.add(Calendar.DAY_OF_YEAR, 1);
-        }
-        calendar.set(Calendar.HOUR_OF_DAY, time);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-
-        // The time of the first backup is set to the hour of the day in configuration page
-        return calendar.getTimeInMillis() - currentTimeStamp;
+        // Recurrence will happened every minute, but the action will be taken according to the cron settings
+        return MIN;
     }
 
     public static PeriodicBackup get() {

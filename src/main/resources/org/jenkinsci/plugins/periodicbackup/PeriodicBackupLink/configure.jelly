@@ -40,13 +40,11 @@
                 <f:entry title="${%tempDirectory.title}" field="tempDirectory">
                     <f:textbox/>
                 </f:entry>
-                <f:entry title="${%initialHourOfDay.title}" field="initialHourOfDay">
+                <f:entry title="${%cron.title}" field="cron">
                     <f:textbox/>
-                    <div id="msg1"/>
-                </f:entry>
-                <f:entry title="${%period.title}" field="period">
-                    <f:textbox/>
-                    <div id="msg2"/>
+                    <f:validateButton
+                            title="${%validateButton.title}" progress="${%validateButton.progress}"
+                            method="testCron" with="cron"/>
                 </f:entry>
                 <f:entry title="${%cycleQuantity.title}" field="cycleQuantity">
                     <f:textbox/>

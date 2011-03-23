@@ -4,34 +4,10 @@ Event.observe(window, 'load', function(event) {
 
 function checkForm(event) {
     var element = Event.element(event);
-    var initialHourOfDay = $$('input[name=_.initialHourOfDay]')[0];
-    var period = $$('input[name=_.period]')[0];
     var volumeSize = $$('input[name=volumeSize]')[0];
     var cycleQuantity= $$('input[name=_.cycleQuantity]')[0];
     var cycleDays= $$('input[name=_.cycleDays]')[0];
 
-    if(!(validatePositiveNum(initialHourOfDay.value)) || initialHourOfDay.value > 24) {
-        Event.stop(event);
-        setDivOpacity('msg1',0);
-        $('msg1').style.display="block";
-        $('msg1').style.color="red";
-        $('msg1').innerHTML = "<strong>Error! Initial backup hour of the day is not correct, please correct.</strong>";
-        appear('msg1');
-    }
-    else {
-        setDivOpacity('msg1',0);
-    }
-    if(!(validatePositiveNum(period.value))) {
-        Event.stop(event);
-        setDivOpacity('msg2',0);
-        $('msg2').style.display="block";
-        $('msg2').style.color="red";
-        $('msg2').innerHTML = "<strong>Error! Period value is not correct, please correct.</strong>";
-        appear('msg2');
-    }
-    else {
-        setDivOpacity('msg2',0);
-    }
     if($$('input[name=multiVolume]')[0] != undefined && $$('input[name=multiVolume]')[0].checked) {
         if(!validatePositiveNum(volumeSize.value)) {
             Event.stop(event);

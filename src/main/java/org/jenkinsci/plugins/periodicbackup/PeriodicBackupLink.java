@@ -25,12 +25,15 @@
 
 package org.jenkinsci.plugins.periodicbackup;
 
+import antlr.ANTLRException;
 import com.google.common.collect.Maps;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.XmlFile;
 import hudson.model.*;
+import hudson.scheduler.CronTab;
 import hudson.util.DescribableList;
+import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -59,10 +62,9 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
 
     private transient String message;   // Message shown on the web page when the backup/restore is performed
     private String tempDirectory;       // Temporary directory for local storage of files, it should not be placed anywhere inside the Jenkins homedir
-    private long period;                // Backup frequency
+    private String cron;                // Backup schedule (cron like)
     private int cycleQuantity;          // Maximum amount of backups allowed
     private int cycleDays;              // Maximum number of days to keep the backup for
-    private int initialHourOfDay;       // Hour of the day of the first backup after Jenkins is started
 
     public PeriodicBackupLink() throws IOException {
         load();
@@ -79,23 +81,13 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
     }
 
     @SuppressWarnings("unused")
-    public long getPeriod() {
-        return period;
+    public String getCron() {
+        return cron;
     }
 
     @SuppressWarnings("unused")
-    public void setPeriod(long period) {
-        this.period = period;
-    }
-
-    @SuppressWarnings("unused")
-    public int getInitialHourOfDay() {
-        return initialHourOfDay;
-    }
-
-    @SuppressWarnings("unused")
-    public void setInitialHourOfDay(int initialHourOfDay) {
-        this.initialHourOfDay = initialHourOfDay;
+    public void setCron(String cron) {
+        this.cron = cron;
     }
 
     @SuppressWarnings("unused")
@@ -208,8 +200,7 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
             tempDirectory = form.getString("tempDirectory");
             JSONObject fileManagerDescribableJson = form.getJSONObject("fileManagerPlugin");
             fileManagerPlugin = (FileManager) req.bindJSON(Class.forName(fileManagerDescribableJson.getString("stapler-class")), fileManagerDescribableJson);
-            initialHourOfDay = form.getInt("initialHourOfDay");
-            period = form.getLong("period");
+            cron = form.getString("cron");
             cycleQuantity = form.getInt("cycleQuantity");
             cycleDays = form.getInt("cycleDays");
             locationPlugins.rebuildHetero(req, form, getLocationDescriptors(), "Location");
@@ -236,6 +227,24 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
 
         public String getDisplayName() {
             return null; // unused
+        }
+
+        @SuppressWarnings("unused")
+        public FormValidation doTestCron(@QueryParameter String cron) {
+            try {
+                return FormValidation.ok(validateCron(cron));
+            } catch (FormValidation f) {
+                return f;
+            }
+        }
+
+        private String validateCron(String cron) throws FormValidation {
+            try {
+                CronTab testCronTab = new CronTab(cron);
+            } catch (ANTLRException e) {
+                throw FormValidation.error(cron + " is not a valid cron syntax! " + e.getMessage());
+            }
+            return "This cron is OK";
         }
     }
 
