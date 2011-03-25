@@ -250,7 +250,7 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
 
         private String validateCron(String cron) throws FormValidation {
             try {
-                CronTab testCronTab = new CronTab(cron);
+                new CronTab(cron);
             } catch (ANTLRException e) {
                 throw FormValidation.error(cron + " is not a valid cron syntax! " + e.getMessage());
             }
