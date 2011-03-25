@@ -54,7 +54,8 @@ public class PeriodicBackup extends AsyncPeriodicWork {
             PeriodicBackupLink link = PeriodicBackupLink.get();
             CronTab cronTab = new CronTab(link.getCron());
             long currentTime = System.currentTimeMillis();
-            if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0) {
+            if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0 || link.isBackupNow()) {
+                link.setBackupNow(false);
                 BackupExecutor executor = new BackupExecutor();
                 try {
                     executor.backup(link.getFileManagerPlugin(), link.getStorages(), link.getLocations(), link.getTempDirectory(), link.getCycleQuantity(), link.getCycleDays());
