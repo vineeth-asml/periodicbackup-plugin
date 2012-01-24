@@ -72,6 +72,17 @@ public class ConfigOnly extends FileManager {
                 File jobConfig = new File(job, "config.xml");
                 if(jobConfig.exists() && jobConfig.isFile()) {
                     filesToBackup.add(jobConfig);
+                    // There might be some config file from the Promotion plugin
+                    File promotionDir = new File(job, "promotions");
+                    if(promotionDir.exists()) {
+                        File[] promotionDirs = promotionDir.listFiles((FileFilter) FileFilterUtils.directoryFileFilter());
+                        for (File dir : promotionDirs) {
+                            File promotionConfig = new File(dir, "config.xml");
+                            if(promotionConfig.exists() && promotionConfig.isFile()) {
+                                filesToBackup.add(promotionConfig);
+                            }
+                        }
+                    }
                 }
                 else {
                     LOGGER.warning(jobConfig.getAbsolutePath() + " does not exist or is not a file.");
