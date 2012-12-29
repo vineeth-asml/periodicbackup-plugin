@@ -41,6 +41,12 @@
             <artifactId>plexus-archiver</artifactId>
             <version>2.2</version>
         </dependency>
+        <!-- PLXCOMP-194: force latest plexus-utils for memory leak fix -->
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+            <version>3.0.10</version>
+        </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
