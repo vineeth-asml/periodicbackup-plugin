@@ -1,4 +1,4 @@
-# Periodick Backup extension implementation tutorial
+# Periodic Backup extension implementation tutorial
 
 This tutorial was written to show how to implement an extension points to the Periodic Backup plugin.
 ### Extension points
@@ -53,6 +53,11 @@ The org.codehaus.plexus.archiver library will be used. The backupStart method in
         } catch (org.codehaus.plexus.archiver.ArchiverException e) {
             LOGGER.warning("Cannot set compression value " + e.getMessage());
         }
+
+        // Support long filenames
+        TarLongFileMode fileMode = new TarLongFileMode();
+        fileMode.setValue(TarLongFileMode.GNU);
+        archiver.setLongfile(fileMode);
 
         archiver.setCompression(compression);
     }
