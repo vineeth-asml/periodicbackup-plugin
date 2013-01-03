@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 /**
  *
  * This implementation of FileManager will only select the .xml files from the Jenkins homedir
- * and the config.xml files of all the jobs during backup.
+ * and the config.xml files of all the jobs and users during backup.
  * During restore it will try to overwrite the existing files.
  */
 public class ConfigOnly extends FileManager {
