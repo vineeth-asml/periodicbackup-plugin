@@ -8,7 +8,7 @@
 
     <artifactId>periodicbackup</artifactId>
     <name>Periodic Backup</name>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.4-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <scm>
