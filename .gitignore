@@ -1,5 +1,6 @@
 target/
 work/
-periodicbackup.iml
-periodicbackup.ipr
-periodicbackup.iws
+.idea/
+*.iml
+*.ipr
+*.iws
