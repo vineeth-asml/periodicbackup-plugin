@@ -28,6 +28,11 @@
             <email>emanuelez@gmail.com</email>
             <timezone>+1</timezone>
         </developer>
+        <developer>
+            <name>Johno Crawford</name>
+            <email>johno.crawford@gmail.com</email>
+            <timezone>+1</timezone>
+        </developer>
     </developers>
 
     <dependencies>
