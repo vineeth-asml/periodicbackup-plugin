@@ -47,14 +47,27 @@ import java.util.List;
 public class FullBackup extends FileManager {
 	
 	private final String excludesString;
+	private final File baseDir;
 
     @DataBoundConstructor
-    public FullBackup(String excludesString) {
-        super();
-		this.excludesString = excludesString;
-        this.restorePolicy = new ReplaceRestorePolicy();
-    }
+	public FullBackup(String excludesString) {
+		this(excludesString, Hudson.getInstance().getRootDir());
+	}
 
+    /**
+     * Test Constructor
+     * 
+     * @param excludesString
+     * @param baseDir
+     */
+    FullBackup(String excludesString, File baseDir) {
+    	super();
+    	this.excludesString = excludesString;
+		this.baseDir = baseDir;
+    	this.restorePolicy = new ReplaceRestorePolicy();
+    }
+    
+    
     public String getDisplayName() {
         return "FullBackup";
     }
@@ -62,7 +75,7 @@ public class FullBackup extends FileManager {
     @Override
     public Iterable<File> getFilesToBackup() {
         DirectoryScanner directoryScanner = new DirectoryScanner(); // It will scan all files inside the root directory
-        directoryScanner.setBasedir(Hudson.getInstance().getRootDir());
+        directoryScanner.setBasedir(baseDir);
         directoryScanner.setExcludes(Iterables.toArray(getExcludes(), String.class));
         directoryScanner.scan();
         List<File> files = Lists.newArrayList();
