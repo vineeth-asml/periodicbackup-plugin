@@ -32,6 +32,8 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -57,7 +59,7 @@ public class FullBackup extends FileManager {
     public Iterable<File> getFilesToBackup() {
         DirectoryScanner directoryScanner = new DirectoryScanner(); // It will scan all files inside the root directory
         directoryScanner.setBasedir(Hudson.getInstance().getRootDir());
-        directoryScanner.setExcludes(getExcludes());
+        directoryScanner.setExcludes(getExcludesArray());
         directoryScanner.scan();
         List<File> files = Lists.newArrayList();
         for (String s : directoryScanner.getIncludedFiles()) {
@@ -65,11 +67,16 @@ public class FullBackup extends FileManager {
         }
         return files;
       }
+    
+	private String[] getExcludesArray() {
+		Iterator<String> excludes = getExcludes();
+		List<String> excludesList = Lists.newArrayList(excludes);
+		return excludesList.toArray(new String[excludesList.size()]);
+	}
 
-      protected String[] getExcludes()
-      {
-        return null;
-      }
+	protected Iterator<String> getExcludes() {
+		return Collections.emptyIterator();
+	}
 
     @Override
     public boolean equals(Object o) {
