@@ -1,43 +1,42 @@
 package org.jenkinsci.plugins.periodicbackup;
 
+import java.util.List;
+
 import hudson.Extension;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class ExcludeByPattern extends FullBackup
-{
-  private final String excludesString;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
-  @DataBoundConstructor
-  public ExcludeByPattern(String excludesString)
-  {
-    this.excludesString = excludesString;
-  }
+public class ExcludeByPattern extends FullBackup {
+	private final String excludesString;
 
-  public String getDisplayName()
-  {
-    return "ExcludeByPattern";
-  }
+	@DataBoundConstructor
+	public ExcludeByPattern(String excludesString) {
+		this.excludesString = excludesString;
+	}
 
-  protected String[] getExcludes()
-  {
-    if (this.excludesString == null) {
-      return null;
-    }
-    return this.excludesString.split(";");
-  }
-  
-  public String getExcludesString() 
-  {
-	return excludesString;
-  }
+	public String getDisplayName() {
+		return "ExcludeByPattern";
+	}
 
-  @Extension
-  public static class DescriptorImpl extends FileManagerDescriptor
-  {
-    public String getDisplayName()
-    {
-      return "ExcludeByPattern";
-    }
-  }
+	protected String[] getExcludes() {
+		if (this.excludesString == null) {
+			return null;
+		}
+		List<String> list = Lists.newArrayList(Splitter.on(';').trimResults().split(excludesString).iterator());
+		return list.toArray(new String[list.size()]);
+	}
+
+	public String getExcludesString() {
+		return excludesString;
+	}
+
+	@Extension
+	public static class DescriptorImpl extends FileManagerDescriptor {
+		public String getDisplayName() {
+			return "ExcludeByPattern";
+		}
+	}
 }
