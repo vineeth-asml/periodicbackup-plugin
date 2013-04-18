@@ -24,17 +24,16 @@
 
 package org.jenkinsci.plugins.periodicbackup;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import hudson.Extension;
 import hudson.model.Hudson;
+import org.apache.tools.ant.DirectoryScanner;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
 import java.util.List;
 
-import org.apache.tools.ant.DirectoryScanner;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 
 /**
  *
