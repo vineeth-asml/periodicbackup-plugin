@@ -25,6 +25,7 @@
 package org.jenkinsci.plugins.periodicbackup;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import hudson.Extension;
 import hudson.model.Hudson;
@@ -33,7 +34,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -59,7 +59,7 @@ public class FullBackup extends FileManager {
     public Iterable<File> getFilesToBackup() {
         DirectoryScanner directoryScanner = new DirectoryScanner(); // It will scan all files inside the root directory
         directoryScanner.setBasedir(Hudson.getInstance().getRootDir());
-        directoryScanner.setExcludes(getExcludesArray());
+        directoryScanner.setExcludes(Iterables.toArray(getExcludes(), String.class));
         directoryScanner.scan();
         List<File> files = Lists.newArrayList();
         for (String s : directoryScanner.getIncludedFiles()) {
@@ -68,12 +68,7 @@ public class FullBackup extends FileManager {
         return files;
       }
     
-	private String[] getExcludesArray() {
-		List<String> excludes = getExcludes();
-		return excludes.toArray(new String[excludes.size()]);
-	}
-
-	protected List<String> getExcludes() {
+	protected Iterable<String> getExcludes() {
 		return Collections.emptyList();
 	}
 

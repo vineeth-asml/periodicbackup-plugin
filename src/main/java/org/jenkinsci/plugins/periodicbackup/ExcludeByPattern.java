@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.periodicbackup;
 
 import java.util.Collections;
-import java.util.List;
 
 import hudson.Extension;
 
@@ -22,7 +21,7 @@ public class ExcludeByPattern extends FullBackup {
 		return "ExcludeByPattern";
 	}
 
-	protected List<String> getExcludes() {
+	protected Iterable<String> getExcludes() {
 		if (this.excludesString == null) {
 			return Collections.emptyList();
 		}
