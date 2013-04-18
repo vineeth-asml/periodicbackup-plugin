@@ -35,7 +35,7 @@ public class FullBackupTest {
 	private static final List<File> ALL_FILES = Arrays.asList(CONFIG_XML, BUILD_XML, JOB_CONFIG_XML, NEXT_BUILD_NUMBER,
 			PLUGIN);
 
-	@Parameters
+	@Parameters(name = "{0}")
 	public static List<Object[]> getTestData() {
 		List<Object[]> testData = new ArrayList<Object[]>();
 
@@ -44,6 +44,9 @@ public class FullBackupTest {
 
 		// test with empty excludesString
 		testData.add(new Object[] { "", ALL_FILES });
+
+		// test with blank excludesString
+		testData.add(new Object[] { "    ", ALL_FILES });
 
 		// test exclude all
 		testData.add(new Object[] { "**", Collections.emptyList() });
