@@ -1,13 +1,14 @@
 package org.jenkinsci.plugins.periodicbackup;
 
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.List;
 
 import hudson.Extension;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 public class ExcludeByPattern extends FullBackup {
 	private final String excludesString;
@@ -21,11 +22,11 @@ public class ExcludeByPattern extends FullBackup {
 		return "ExcludeByPattern";
 	}
 
-	protected Iterator<String> getExcludes() {
+	protected List<String> getExcludes() {
 		if (this.excludesString == null) {
-			return Collections.emptyIterator();
+			return Collections.emptyList();
 		}
-		return Splitter.on(';').trimResults().split(excludesString).iterator();
+		return Lists.newArrayList(Splitter.on(';').trimResults().split(excludesString).iterator());
 	}
 
 	public String getExcludesString() {

@@ -69,13 +69,12 @@ public class FullBackup extends FileManager {
       }
     
 	private String[] getExcludesArray() {
-		Iterator<String> excludes = getExcludes();
-		List<String> excludesList = Lists.newArrayList(excludes);
-		return excludesList.toArray(new String[excludesList.size()]);
+		List<String> excludes = getExcludes();
+		return excludes.toArray(new String[excludes.size()]);
 	}
 
-	protected Iterator<String> getExcludes() {
-		return Collections.emptyIterator();
+	protected List<String> getExcludes() {
+		return Collections.emptyList();
 	}
 
     @Override
