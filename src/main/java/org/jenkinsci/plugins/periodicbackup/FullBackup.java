@@ -24,16 +24,17 @@
 
 package org.jenkinsci.plugins.periodicbackup;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import hudson.Extension;
 import hudson.model.Hudson;
+
+import java.io.File;
+import java.util.List;
+
 import org.apache.tools.ant.DirectoryScanner;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 
 /**
  *
@@ -57,10 +58,9 @@ public class FullBackup extends FileManager {
     public Iterable<File> getFilesToBackup() {
         DirectoryScanner directoryScanner = new DirectoryScanner(); // It will scan all files inside the root directory
         directoryScanner.setBasedir(Hudson.getInstance().getRootDir());
-        System.err.println("************ Using excludes: " + Arrays.toString(getExcludes()));
         directoryScanner.setExcludes(getExcludes());
         directoryScanner.scan();
-        List files = Lists.newArrayList();
+        List<File> files = Lists.newArrayList();
         for (String s : directoryScanner.getIncludedFiles()) {
           files.add(new File(directoryScanner.getBasedir(), s));
         }
