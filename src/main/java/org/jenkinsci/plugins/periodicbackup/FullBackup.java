@@ -25,6 +25,7 @@
 package org.jenkinsci.plugins.periodicbackup;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import hudson.Extension;
@@ -44,10 +45,13 @@ import java.util.List;
  * and then it will write with files in the selected backup.
  */
 public class FullBackup extends FileManager {
+	
+	private final String excludesString;
 
     @DataBoundConstructor
-    public FullBackup() {
+    public FullBackup(String excludesString) {
         super();
+		this.excludesString = excludesString;
         this.restorePolicy = new ReplaceRestorePolicy();
     }
 
@@ -68,8 +72,11 @@ public class FullBackup extends FileManager {
         return files;
       }
     
-	protected Iterable<String> getExcludes() {
-		return Collections.emptyList();
+    private Iterable<String> getExcludes() {
+		if (this.excludesString == null) {
+			return Collections.emptyList();
+		}
+		return Lists.newArrayList(Splitter.on(';').trimResults().split(excludesString).iterator());
 	}
 
     @Override
@@ -85,7 +92,11 @@ public class FullBackup extends FileManager {
     @Override
     public int hashCode() {
         return 73;
-    }
+    }	
+    
+    public String getExcludesString() {
+		return excludesString;
+	}
 
     @SuppressWarnings("unused")
     @Extension
