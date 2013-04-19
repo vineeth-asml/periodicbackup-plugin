@@ -83,7 +83,7 @@ public class FullBackupTest {
 	public void test() {
 		FullBackup fullBackup = new FullBackup(excludesString, BASE_DIR);
 		List<File> filesToBackup = asList(fullBackup.getFilesToBackup());
-		Assert.assertThat(filesToBackup, Matchers.containsInAnyOrder(expectedFiles.toArray()));
+		Assert.assertThat(filesToBackup, Matchers.equalTo(expectedFiles));
 	}
 
 	private List<File> asList(Iterable<File> iterable) {
