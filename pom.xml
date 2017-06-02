@@ -3,8 +3,8 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <!--First Jenkins LTS baseline which contains Stapler 1.180+ with @RequirePOST-->
-        <version>1.466</version>
+        <!--First Jenkins LTS baseline which contains Stapler 1.180+ with @RequirePOST && post attribute in l:task-->
+        <version>1.609.3</version>
     </parent>
 
     <artifactId>periodicbackup</artifactId>
