@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import hudson.Extension;
+import hudson.RestrictedSince;
 import hudson.util.FormValidation;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -42,6 +43,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  *
@@ -201,9 +206,12 @@ public class LocalDirectory extends Location {
             return "LocalDirectory";
         }
 
-        @SuppressWarnings("unused")
-        public FormValidation doTestPath(@QueryParameter String path) {
+        @RequirePOST
+        @Restricted(NoExternalUse.class)
+        @RestrictedSince("1.4")
+        public FormValidation doTestPath(@QueryParameter String path) throws AccessDeniedException {
             try {
+                Util.checkAdminPermissionInFormValidation();
                 return FormValidation.ok(validatePath(path));
             } catch (FormValidation f) {
                 return f;

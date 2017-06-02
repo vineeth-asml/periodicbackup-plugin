@@ -26,12 +26,18 @@ package org.jenkinsci.plugins.periodicbackup;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import hudson.Functions;
+import hudson.model.Hudson;
+import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 public class Util {
     /**
@@ -156,4 +162,33 @@ public class Util {
     public static boolean isWritableDirectory(File directory) {
         return (directory.exists() && directory.isDirectory() && directory.canWrite());
     }
+    
+    /**
+     * Check that the current user has administrator permissions.
+     * @throws IOException Jenkins instance has not been started yet or shutdown is in progress.
+     * @throws AccessDeniedException Access denied
+     */
+    @Restricted(NoExternalUse.class)
+    public static void checkAdminPermission() throws IOException, AccessDeniedException {
+        Hudson hudson = Hudson.getInstance();
+        if(hudson == null) {
+            throw new IOException("Jenkins instance is not ready");
+        }
+        hudson.checkPermission(Hudson.ADMINISTER);
+    }
+    
+    /**
+     * Check that the current user has administrator permissions.
+     * @throws FormValidation Jenkins instance has not been started yet or shutdown is in progress.
+     * @throws AccessDeniedException No access permission.
+     *                               Although it is a runtime exception, it should never happen on valid use-cases of calling methods.
+     */
+    @Restricted(NoExternalUse.class)
+    public static void checkAdminPermissionInFormValidation() throws FormValidation, AccessDeniedException {
+        try {
+            checkAdminPermission();
+        } catch(IOException ex) {
+            throw FormValidation.warning(ex, "Cannot check the permissions");
+        }
+    } 
 }

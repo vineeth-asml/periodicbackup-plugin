@@ -29,6 +29,8 @@ import antlr.ANTLRException;
 import com.google.common.collect.Maps;
 import hudson.BulkChange;
 import hudson.Extension;
+import hudson.Functions;
+import hudson.RestrictedSince;
 import hudson.XmlFile;
 import hudson.model.*;
 import hudson.scheduler.CronTab;
@@ -44,6 +46,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  *
@@ -124,8 +130,11 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
         return Messages.displayName();
     }
 
-    @SuppressWarnings("unused")
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("1.4")
     public void doBackup(StaplerRequest req, StaplerResponse rsp) throws Exception {
+        Util.checkAdminPermission();
         backupNow = true;
         PeriodicBackup.get().doRun();
         message = "Creating backup...";
@@ -143,7 +152,11 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
      * @throws PeriodicBackupException If other problem occurs
      */
     @SuppressWarnings("unused")
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("1.4")
     public void doRestore(StaplerRequest req, StaplerResponse rsp, @QueryParameter("backupHash") int backupHash) throws IOException, PeriodicBackupException {
+        Util.checkAdminPermission();
         Map<Integer, BackupObject> backupObjectMap = Maps.newHashMap();
         // Populate the map with key=hashcode of value
         for (Location location : locationPlugins) {
@@ -200,8 +213,11 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
         return Hudson.getInstance().getRootDir().getAbsolutePath();
     }
 
-    @SuppressWarnings("unused")
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("1.4")
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException, ClassNotFoundException {
+        Functions.checkPermission(Hudson.ADMINISTER);
         JSONObject form = req.getSubmittedForm(); // Submitted configuration form
 
         // Persist the setting
@@ -239,9 +255,12 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
             return null; // unused
         }
 
-        @SuppressWarnings("unused")
-        public FormValidation doTestCron(@QueryParameter String cron) {
+        @RequirePOST
+        @Restricted(NoExternalUse.class)
+        @RestrictedSince("1.4")
+        public FormValidation doTestCron(@QueryParameter String cron) throws AccessDeniedException {
             try {
+                Util.checkAdminPermissionInFormValidation();
                 return FormValidation.ok(validateCron(cron));
             } catch (FormValidation f) {
                 return f;
