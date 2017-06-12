@@ -36,6 +36,7 @@ import java.io.FileFilter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  *
@@ -59,7 +60,7 @@ public class ConfigOnly extends FileManager {
 
     @Override
     public Iterable<File> getFilesToBackup() throws PeriodicBackupException {
-        File rootDir = Hudson.getInstance().getRootDir();
+        File rootDir = Jenkins.getActiveInstance().getRootDir();
         List<File> filesToBackup = Lists.newArrayList();
         addRootFiles(rootDir, filesToBackup);
         addJobFiles(rootDir, filesToBackup);

@@ -25,13 +25,13 @@
 package org.jenkinsci.plugins.periodicbackup;
 
 import com.google.common.collect.Lists;
-import hudson.model.Hudson;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  *
@@ -46,7 +46,7 @@ public class ReplaceRestorePolicy implements RestorePolicy {
     private transient int filesDeleted, filesReplaced, filesKept;
 
     public void restore(File tempDir) throws IOException, PeriodicBackupException {
-        hudsonRoot = Hudson.getInstance().getRootDir();
+        hudsonRoot = Jenkins.getActiveInstance().getRootDir();
         if(hudsonRoot == null) {
             throw new PeriodicBackupException("HOME directory is unidentified.");
         }

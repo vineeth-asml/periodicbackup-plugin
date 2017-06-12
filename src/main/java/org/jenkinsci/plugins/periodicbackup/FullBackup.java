@@ -29,13 +29,13 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import hudson.Extension;
-import hudson.model.Hudson;
 import org.apache.tools.ant.DirectoryScanner;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import jenkins.model.Jenkins;
 
 
 /**
@@ -51,7 +51,7 @@ public class FullBackup extends FileManager {
 
     @DataBoundConstructor
 	public FullBackup(String excludesString) {
-		this(excludesString, Hudson.getInstance().getRootDir());
+		this(excludesString, Jenkins.getActiveInstance().getRootDir());
 	}
 
     /**

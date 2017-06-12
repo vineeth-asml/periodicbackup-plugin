@@ -24,7 +24,6 @@
 
 package org.jenkinsci.plugins.periodicbackup;
 
-import hudson.model.Hudson;
 import hudson.security.ACL;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -34,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 public class RestoreExecutor implements Runnable {
 
@@ -107,7 +107,7 @@ public class RestoreExecutor implements Runnable {
         Authentication origAuth = SecurityContextHolder.getContext().getAuthentication();
         SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
-            Hudson.getInstance().doReload();
+            Jenkins.getActiveInstance().doReload();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Error reloading config files from disk: {0}", e.getMessage());
         } finally {

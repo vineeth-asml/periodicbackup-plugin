@@ -27,12 +27,12 @@ package org.jenkinsci.plugins.periodicbackup;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.io.Files;
-import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Date;
+import jenkins.model.Jenkins;
 
 public class BackupObject implements Comparable {
 
@@ -75,7 +75,7 @@ public class BackupObject implements Comparable {
             public BackupObject apply(File file) {
                 if(file != null) {
                     try {
-                        return (BackupObject) Hudson.XSTREAM.fromXML(Files.toString(file, Charset.defaultCharset()));
+                        return (BackupObject) Jenkins.XSTREAM.fromXML(Files.toString(file, Charset.defaultCharset()));
                     } catch (IOException e) {
                         return null;
                     }
@@ -94,7 +94,7 @@ public class BackupObject implements Comparable {
         return new Function<String, BackupObject>() {
             public BackupObject apply(String content) {
                 if (content != null) {
-                    return (BackupObject) Hudson.XSTREAM.fromXML(content);
+                    return (BackupObject) Jenkins.XSTREAM.fromXML(content);
                 } else {
                     return null;
                 }
@@ -113,7 +113,7 @@ public class BackupObject implements Comparable {
     }
 
     public String getAsString() {
-        return Hudson.XSTREAM.toXML(this);
+        return Jenkins.XSTREAM.toXML(this);
     }
 
     @Override

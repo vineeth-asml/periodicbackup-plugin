@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import jenkins.model.Jenkins;
 
 /**
  *
@@ -192,12 +193,12 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
 
     protected XmlFile getConfigXml() {
         return new XmlFile(Hudson.XSTREAM,
-                new File(Hudson.getInstance().getRootDir(), "periodicBackup.xml"));
+                new File(Jenkins.getActiveInstance().getRootDir(), "periodicBackup.xml"));
     }
 
     @SuppressWarnings("unused")
     public String getRootDirectory() {
-        return Hudson.getInstance().getRootDir().getAbsolutePath();
+        return Jenkins.getActiveInstance().getRootDir().getAbsolutePath();
     }
 
     @SuppressWarnings("unused")
