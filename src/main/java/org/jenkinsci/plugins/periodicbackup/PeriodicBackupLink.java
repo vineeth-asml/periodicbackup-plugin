@@ -226,7 +226,7 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
     }
 
     public DescriptorImpl getDescriptor() {
-        return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class);
+        return Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class);
     }
 
     /**
