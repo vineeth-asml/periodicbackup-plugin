@@ -35,7 +35,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -46,23 +49,28 @@ import jenkins.model.Jenkins;
  */
 public class FullBackup extends FileManager {
 	
-	private final String excludesString;
+    @CheckForNull
+    private final String excludesString;
 	private final File baseDir;
 
+    public FullBackup() {
+        this(null);
+    }
+
     @DataBoundConstructor
-	public FullBackup(String excludesString) {
+	public FullBackup(@CheckForNull String excludesString) {
 		this(excludesString, Jenkins.getActiveInstance().getRootDir());
 	}
 
     /**
      * Test Constructor
      * 
-     * @param excludesString
-     * @param baseDir
+     * @param excludesString Optional list of directories to be excluded
+     * @param baseDir Base directory
      */
-    FullBackup(String excludesString, File baseDir) {
+    FullBackup(@CheckForNull String excludesString, @Nonnull File baseDir) {
     	super();
-    	this.excludesString = excludesString;
+    	this.excludesString = StringUtils.trimToNull(excludesString);
 		this.baseDir = baseDir;
     	this.restorePolicy = new ReplaceRestorePolicy();
     }
@@ -107,9 +115,10 @@ public class FullBackup extends FileManager {
         return 73;
     }	
     
+    @CheckForNull
     public String getExcludesString() {
-		return excludesString;
-	}
+        return excludesString;
+    }
 
     @SuppressWarnings("unused")
     @Extension
