@@ -27,12 +27,15 @@ package org.jenkinsci.plugins.periodicbackup;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.io.Files;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Date;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 public class BackupObject implements Comparable {
 
@@ -48,7 +51,7 @@ public class BackupObject implements Comparable {
         this.fileManager = fileManager;
         this.storage = storage;
         this.location = location;
-        this.timestamp = timestamp;
+        this.timestamp = timestamp != null ? (Date)timestamp.clone() : null;
     }
 
     @SuppressWarnings("unused")
@@ -70,6 +73,7 @@ public class BackupObject implements Comparable {
      *
      * @return transformation function to convert BackupObject file into BackupObject
      */
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "As designed in API")
     public static Function<File, BackupObject> getFromFile() {
         return new Function<File, BackupObject>() {
             public BackupObject apply(File file) {
@@ -103,6 +107,8 @@ public class BackupObject implements Comparable {
     }
 
     @SuppressWarnings("unused")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Internal API")
+    @Restricted(NoExternalUse.class)
     public Date getTimestamp() {
         return this.timestamp;
     }
