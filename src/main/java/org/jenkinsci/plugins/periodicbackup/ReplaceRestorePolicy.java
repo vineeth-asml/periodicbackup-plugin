@@ -122,7 +122,7 @@ public class ReplaceRestorePolicy implements RestorePolicy {
                     FileUtils.copyFile(file, destinationFile);
                     filesReplaced++;
                 }
-                else if(autoExclusionList != null && autoExclusionList.contains(relativePath)) {
+                else if(autoExclusionList.contains(relativePath)) {
                         LOGGER.warning("File " + file.getAbsolutePath() + " is excluded from the restore process, original file will be kept");
                         filesKept++;
                 }

@@ -71,7 +71,7 @@ public class PeriodicBackupPlugin extends Plugin {
 
         // Find Target with the specified name according to LogRecorder.
         Target target = null;
-        if ((recorder != null) && (current != null)) {
+        if (current != null) {
           for (Target currTarg : recorder.targets) {
             if (currTarg.name.equals(current)) {
               target = currTarg;
