@@ -64,7 +64,15 @@ public class RestoreExecutor implements Runnable {
         File finalResultDir = new File(tempDir, "finalResult");
 
         // The /finalResult directory should be empty at this point
-        File[] finalResultDirFileList = finalResultDir.listFiles();
+        File[] finalResultDirFileList;
+        try {
+            finalResultDirFileList = Util.listFiles(finalResultDir);
+        } catch (PeriodicBackupException ex) {
+            LOGGER.log(Level.WARNING, "Restoration Failure! Cannot list contents of " + finalResultDir.getAbsolutePath(), ex);
+            PeriodicBackupLink.get().setMessage("");
+            return;
+        }
+        
         if(finalResultDir.exists() && finalResultDirFileList.length > 0) {
             LOGGER.warning("The final result directory " + finalResultDir.getAbsolutePath() + " is not empty, deleting...");
             try {

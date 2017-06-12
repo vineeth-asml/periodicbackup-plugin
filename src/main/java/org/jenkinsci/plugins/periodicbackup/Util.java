@@ -32,6 +32,10 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 public class Util {
     /**
@@ -155,5 +159,45 @@ public class Util {
 
     public static boolean isWritableDirectory(File directory) {
         return (directory.exists() && directory.isDirectory() && directory.canWrite());
+    }
+    
+    public static File[] listFiles(@Nonnull File directory) throws PeriodicBackupException {
+        return listFiles(directory, null);
+    }
+    
+    /**
+     * Secure version of the listFiles() logic
+     * @param directory Directory to be listed
+     * @param fileFilter Optional file filter
+     * @return Files in the directory
+     * @throws PeriodicBackupException Whatever error
+     */
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    public static File[] listFiles(@Nonnull File directory, @CheckForNull FileFilter fileFilter) throws PeriodicBackupException {
+        if (!directory.isDirectory()) {
+            throw new PeriodicBackupException(formatMessage(directory, "File is not a directory"));
+        }
+        
+        final File[] files;
+        try {
+            files = fileFilter == null ? directory.listFiles() : directory.listFiles(fileFilter);
+        } catch(SecurityException ex) {
+            throw new PeriodicBackupException(formatMessage(directory, "Securiy exception while listing files"), ex);
+        }
+        
+        if (files == null) {
+            throw new PeriodicBackupException(formatMessage(directory, "It is not a valid directory or there is an I/O error"));
+        }
+        
+        return files;
+    }
+    
+    private static String formatMessage(@Nonnull File directory, @Nonnull String extra) {
+        StringBuilder bldr = new StringBuilder("Cannot list files of ");
+        bldr.append(directory.getAbsolutePath());
+        bldr.append(". ");
+        bldr.append(extra);
+        return bldr.toString();
     }
 }

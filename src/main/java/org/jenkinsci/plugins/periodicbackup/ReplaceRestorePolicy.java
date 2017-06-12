@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 
 /**
@@ -55,9 +56,9 @@ public class ReplaceRestorePolicy implements RestorePolicy {
         filesReplaced = 0;
         filesKept = 0;
 
-        deleteAccessible(hudsonRoot.listFiles());
+        deleteAccessible(Util.listFiles(hudsonRoot));
         LOGGER.info(filesDeleted + " files have been deleted from " + hudsonRoot.getAbsolutePath());
-        replaceAccessible(tempDir.listFiles(), tempDir);
+        replaceAccessible(Util.listFiles(tempDir), tempDir);
         LOGGER.info("Replacing of files finished.\nAfter deleting " + filesDeleted + " files from " +
                 hudsonRoot.getAbsolutePath() + "\n" + filesReplaced + " files have been restored from backup and "
                 + filesKept + " files have been kept.");
@@ -68,8 +69,9 @@ public class ReplaceRestorePolicy implements RestorePolicy {
      * Attempt to recursively delete all accessible files from the given files array.
      *
      * @param files array of File objects given in order to be deleted
+     * @throws PeriodicBackupException Issue with listing one of the child directories
      */
-    private void deleteAccessible(File[] files) {
+    private void deleteAccessible(@Nonnull File[] files) throws PeriodicBackupException {
         String relativePath;
         for(File file : files) {
             if(!file.isDirectory()) {
@@ -90,7 +92,7 @@ public class ReplaceRestorePolicy implements RestorePolicy {
                 }
             }
             else {
-                deleteAccessible(file.listFiles());
+                deleteAccessible(Util.listFiles(file));
             }
         }
     }
@@ -103,8 +105,9 @@ public class ReplaceRestorePolicy implements RestorePolicy {
      * @param files to copy
      * @param tempDir temporary directory where @files are placed
      * @throws IOException If an IO problem occurs
+     * @throws PeriodicBackupException Issue with listing one of the directories
      */
-    private void replaceAccessible(File[] files, File tempDir) throws IOException {
+    private void replaceAccessible(File[] files, File tempDir) throws IOException, PeriodicBackupException {
         String relativePath;
         File destinationFile;
         for(File file : files) {
@@ -125,7 +128,7 @@ public class ReplaceRestorePolicy implements RestorePolicy {
                 }
             }
             else {
-                replaceAccessible(file.listFiles(), tempDir);
+                replaceAccessible(Util.listFiles(file), tempDir);
             }
         }
     }
