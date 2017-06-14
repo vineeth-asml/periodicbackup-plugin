@@ -112,12 +112,7 @@ public class ConfigOnly extends FileManager {
         File usersDir = new File(rootDir, "users");
         if (usersDir.exists() && usersDir.isDirectory()) {
             // Each user directory should have a config.xml file
-            File[] dirsInUsers = usersDir.listFiles((FileFilter) FileFilterUtils.directoryFileFilter());
-            if (dirsInUsers == null) {
-                // First one may happen only due to the race condition
-                throw new PeriodicBackupException("Job directory path does not denote or there is an I/O error");
-            }
-            
+            File[] dirsInUsers =  Util.listFiles(usersDir, FileFilterUtils.directoryFileFilter());
             for (File user : dirsInUsers) {
                 File userConfig = new File(user, "config.xml");
                 if (userConfig.exists() && userConfig.isFile()) {

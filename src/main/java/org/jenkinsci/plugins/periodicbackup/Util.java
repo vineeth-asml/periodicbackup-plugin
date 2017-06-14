@@ -183,7 +183,7 @@ public class Util {
         try {
             files = fileFilter == null ? directory.listFiles() : directory.listFiles(fileFilter);
         } catch(SecurityException ex) {
-            throw new PeriodicBackupException(formatMessage(directory, "Securiy exception while listing files"), ex);
+            throw new PeriodicBackupException(formatMessage(directory, "Security exception while listing files"), ex);
         }
         
         if (files == null) {
