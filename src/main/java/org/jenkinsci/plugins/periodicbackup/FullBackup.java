@@ -29,13 +29,16 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import hudson.Extension;
-import hudson.model.Hudson;
 import org.apache.tools.ant.DirectoryScanner;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -46,23 +49,28 @@ import java.util.List;
  */
 public class FullBackup extends FileManager {
 	
-	private final String excludesString;
+    @CheckForNull
+    private final String excludesString;
 	private final File baseDir;
 
+    public FullBackup() {
+        this(null);
+    }
+
     @DataBoundConstructor
-	public FullBackup(String excludesString) {
-		this(excludesString, Hudson.getInstance().getRootDir());
+	public FullBackup(@CheckForNull String excludesString) {
+		this(excludesString, Jenkins.getActiveInstance().getRootDir());
 	}
 
     /**
      * Test Constructor
      * 
-     * @param excludesString
-     * @param baseDir
+     * @param excludesString Optional list of directories to be excluded
+     * @param baseDir Base directory
      */
-    FullBackup(String excludesString, File baseDir) {
+    FullBackup(@CheckForNull String excludesString, @Nonnull File baseDir) {
     	super();
-    	this.excludesString = excludesString;
+    	this.excludesString = StringUtils.trimToNull(excludesString);
 		this.baseDir = baseDir;
     	this.restorePolicy = new ReplaceRestorePolicy();
     }
@@ -107,9 +115,10 @@ public class FullBackup extends FileManager {
         return 73;
     }	
     
+    @CheckForNull
     public String getExcludesString() {
-		return excludesString;
-	}
+        return excludesString;
+    }
 
     @SuppressWarnings("unused")
     @Extension

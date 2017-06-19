@@ -24,12 +24,12 @@
 
 package org.jenkinsci.plugins.periodicbackup;
 
-import hudson.model.Hudson;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  *
@@ -41,7 +41,7 @@ public class OverwriteRestorePolicy implements RestorePolicy {
     private static final Logger LOGGER = Logger.getLogger(OverwriteRestorePolicy.class.getName());
 
     public void restore(File tempDir) throws IOException {
-        File hudsonRoot = Hudson.getInstance().getRootDir();
+        File hudsonRoot = Jenkins.getActiveInstance().getRootDir();
 
         FileUtils.copyDirectory(tempDir, hudsonRoot);
         LOGGER.info("Restoring of files finished");

@@ -26,7 +26,6 @@ package org.jenkinsci.plugins.periodicbackup;
 
 import com.google.common.collect.Lists;
 import hudson.Extension;
-import hudson.model.Hudson;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.tar.TarArchiver;
 import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
@@ -37,6 +36,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 public class TarGzStorage extends Storage {
 
@@ -76,7 +76,7 @@ public class TarGzStorage extends Storage {
     @Override
     public void backupAddFile(File fileToStore) throws PeriodicBackupException {
         try {
-            archiver.addFile(fileToStore, Util.getRelativePath(fileToStore, Hudson.getInstance().getRootDir()));
+            archiver.addFile(fileToStore, Util.getRelativePath(fileToStore, Jenkins.getActiveInstance().getRootDir()));
         } catch (ArchiverException e) {
             LOGGER.warning("Could not add file to the archive. " + e.getMessage());
         }
