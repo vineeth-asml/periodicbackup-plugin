@@ -61,12 +61,16 @@ public class ConfigOnly extends FileManager {
     public Iterable<File> getFilesToBackup() throws PeriodicBackupException {
         File rootDir = Hudson.getInstance().getRootDir();
         List<File> filesToBackup = Lists.newArrayList();
-        // First find the xml files in the home directory
-        File[] xmlsInRoot = rootDir.listFiles(Util.extensionFileFilter("xml"));
-        filesToBackup.addAll(Arrays.asList(xmlsInRoot));
+        addRootFiles(rootDir, filesToBackup);
         addJobFiles(rootDir, filesToBackup);
         addUserFiles(rootDir, filesToBackup);
         return filesToBackup;
+    }
+
+    private void addRootFiles(File rootDir, List<File> filesToBackup) {
+        // First find the xml files in the home directory
+        File[] xmlsInRoot = rootDir.listFiles(Util.extensionFileFilter("xml"));
+        filesToBackup.addAll(Arrays.asList(xmlsInRoot));
     }
 
     private void addJobFiles(File rootDir, List<File> filesToBackup) {

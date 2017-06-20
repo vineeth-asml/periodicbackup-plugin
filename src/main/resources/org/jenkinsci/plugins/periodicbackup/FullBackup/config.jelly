@@ -33,5 +33,9 @@
         <!-- This entry is only for help file binding -->
     </f:entry>
 
+    <f:entry title="${%excludesString.title}" field="excludesString">
+        <f:textbox/>
+    </f:entry>
+
 
 </j:jelly>
