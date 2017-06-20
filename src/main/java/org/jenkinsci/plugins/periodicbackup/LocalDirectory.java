@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.accmod.Restricted;
@@ -69,10 +70,19 @@ public class LocalDirectory extends Location {
             LOGGER.warning(path.getAbsolutePath() + " is not a existing/writable directory.");
             return Sets.newHashSet();
         }
-        if(path.listFiles().length == 0) {
+        
+        FileFilter extensionFileFilter = Util.extensionFileFilter(BackupObject.EXTENSION);
+        final File[] files;
+        try {
+            files = Util.listFiles(path, extensionFileFilter);
+        } catch(PeriodicBackupException ex) {
+            LOGGER.log(Level.WARNING, "Cannot retrieve extension files from " + path.getAbsolutePath(), ex);
             return Sets.newHashSet();
         }
-        File[] files = path.listFiles(Util.extensionFileFilter(BackupObject.EXTENSION));
+        
+        if(files.length == 0) {
+            return Sets.newHashSet();
+        }
         List<File> backupObjectFiles = Lists.newArrayList(files);
         // The sorting will be performed according to the timestamp
         Collections.sort(backupObjectFiles);
@@ -105,7 +115,7 @@ public class LocalDirectory extends Location {
     @Override
     public Iterable<File> retrieveBackupFromLocation(final BackupObject backup, File tempDir) throws IOException, PeriodicBackupException {
         // Get the list of archive files related to the given BackupObject
-        File[] files = path.listFiles(new FileFilter() {
+        File[] files = Util.listFiles(path, new FileFilter() {
             public boolean accept(File pathname) {
                 return (pathname.getName().contains( Util.getFormattedDate(BackupObject.FILE_TIMESTAMP_PATTERN, backup.getTimestamp())) &&
                         !pathname.getName().endsWith(BackupObject.EXTENSION));
@@ -146,7 +156,13 @@ public class LocalDirectory extends Location {
     @Override
     public void deleteBackupFiles(BackupObject backupObject) {
         String filenamePart = Util.generateFileNameBase(backupObject.getTimestamp());
-        File[] files = path.listFiles();
+        final File[] files;
+        try {
+            files = Util.listFiles(path);
+        } catch (PeriodicBackupException ex) {
+            LOGGER.log(Level.WARNING, "Cannot enumerate the backup files", ex);
+            return;
+        }
 
         // Delete all the files containing the timestamp of the given BackupObject in their names
         for(File file : files) {

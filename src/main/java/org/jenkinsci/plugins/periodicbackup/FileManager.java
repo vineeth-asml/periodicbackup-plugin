@@ -28,10 +28,10 @@ import com.google.common.base.Objects;
 import hudson.DescriptorExtensionList;
 import hudson.model.AbstractModelObject;
 import hudson.model.Describable;
-import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.IOException;
+import jenkins.model.Jenkins;
 
 /**
  *
@@ -68,13 +68,14 @@ public abstract class FileManager extends AbstractModelObject implements Describ
      * @return Collection of FileManager Descriptors
      */
     public static DescriptorExtensionList<FileManager, FileManagerDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(FileManager.class);
+        return Jenkins.getActiveInstance().getDescriptorList(FileManager.class);
     }
 
     public FileManagerDescriptor getDescriptor() {
-        return (FileManagerDescriptor) Hudson.getInstance().getDescriptor(getClass());
+        return (FileManagerDescriptor) Jenkins.getActiveInstance().getDescriptor(getClass());
     }
 
+    @Override
     public String getSearchUrl() {
         return "FileManager";
     }

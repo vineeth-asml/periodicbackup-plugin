@@ -27,9 +27,9 @@ package org.jenkinsci.plugins.periodicbackup;
 import hudson.DescriptorExtensionList;
 import hudson.model.AbstractModelObject;
 import hudson.model.Describable;
-import hudson.model.Hudson;
 
 import java.io.File;
+import jenkins.model.Jenkins;
 
 /**
  *
@@ -76,7 +76,7 @@ public abstract class Storage extends AbstractModelObject implements Describable
     public abstract void unarchiveFiles(Iterable<File> archives, File finalResultDir);
 
     public StorageDescriptor getDescriptor() {
-        return (StorageDescriptor) Hudson.getInstance().getDescriptor(getClass());
+        return (StorageDescriptor) Jenkins.getActiveInstance().getDescriptor(getClass());
     }
 
     public String getSearchUrl() {
@@ -90,7 +90,7 @@ public abstract class Storage extends AbstractModelObject implements Describable
      * @return Collection of FileManager Descriptors
      */
     public static DescriptorExtensionList<Storage, StorageDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(Storage.class);
+        return Jenkins.getActiveInstance().getDescriptorList(Storage.class);
     }
 
 }

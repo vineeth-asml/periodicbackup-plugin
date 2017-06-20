@@ -26,13 +26,13 @@ package org.jenkinsci.plugins.periodicbackup;
 
 import com.google.common.collect.Lists;
 import hudson.Extension;
-import hudson.model.Hudson;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 public class NullStorage extends Storage {
 
@@ -63,7 +63,7 @@ public class NullStorage extends Storage {
     public void backupAddFile(File fileToStore) throws PeriodicBackupException {
         try {
             FileUtils.copyFile(fileToStore, new File(destinationDirectory,
-                    Util.getRelativePath(fileToStore, Hudson.getInstance().getRootDir())));
+                    Util.getRelativePath(fileToStore, Jenkins.getActiveInstance().getRootDir())));
         } catch (IOException e) {
             LOGGER.warning("Could not copy " + fileToStore.getAbsolutePath() + " to " + destinationDirectory);
         }

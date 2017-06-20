@@ -3,11 +3,11 @@ package org.jenkinsci.plugins.periodicbackup;
 import hudson.Plugin;
 import hudson.logging.LogRecorder;
 import hudson.logging.LogRecorder.Target;
-import hudson.model.Hudson;
 import hudson.security.ACL;
 
 import java.io.IOException;
 import java.util.logging.Level;
+import jenkins.model.Jenkins;
 
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -53,11 +53,11 @@ public class PeriodicBackupPlugin extends Plugin {
 
     try {
       for (String current : debugLoggerNames) {
-        LogRecorder recorder = Hudson.getInstance().getLog().getLogRecorder(current);
+        LogRecorder recorder = Jenkins.getActiveInstance().getLog().getLogRecorder(current);
 
         if (recorder == null) {
-          Hudson.getInstance().getLog().doNewLogRecorder(current);
-          recorder = Hudson.getInstance().getLog().getLogRecorder(current);
+          Jenkins.getActiveInstance().getLog().doNewLogRecorder(current);
+          recorder = Jenkins.getActiveInstance().getLog().getLogRecorder(current);
           recorder.targets.add(new Target(current, level));
 
           try {
@@ -71,7 +71,7 @@ public class PeriodicBackupPlugin extends Plugin {
 
         // Find Target with the specified name according to LogRecorder.
         Target target = null;
-        if ((recorder != null) && (current != null)) {
+        if (current != null) {
           for (Target currTarg : recorder.targets) {
             if (currTarg.name.equals(current)) {
               target = currTarg;

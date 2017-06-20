@@ -28,4 +28,8 @@ class PeriodicBackupException extends Exception {
     public PeriodicBackupException(String msg) {
         super(msg);
     }
+    
+    public PeriodicBackupException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 }

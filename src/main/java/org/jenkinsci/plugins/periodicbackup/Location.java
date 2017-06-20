@@ -27,10 +27,10 @@ package org.jenkinsci.plugins.periodicbackup;
 import hudson.DescriptorExtensionList;
 import hudson.model.AbstractModelObject;
 import hudson.model.Describable;
-import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.IOException;
+import jenkins.model.Jenkins;
 
 /**
  *
@@ -87,13 +87,15 @@ public abstract class Location extends AbstractModelObject implements Describabl
      * @return Collection of FileManager Descriptors
      */
     public static DescriptorExtensionList<Location, LocationDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(Location.class);
+        return Jenkins.getActiveInstance().getDescriptorList(Location.class);
     }
 
+    @Override
     public LocationDescriptor getDescriptor() {
-        return (LocationDescriptor) Hudson.getInstance().getDescriptor(getClass());
+        return (LocationDescriptor) Jenkins.getActiveInstance().getDescriptor(getClass());
     }
 
+    @Override
     public String getSearchUrl() {
         return "Location";
     }

@@ -35,7 +35,9 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  *
@@ -59,7 +61,7 @@ public class ConfigOnly extends FileManager {
 
     @Override
     public Iterable<File> getFilesToBackup() throws PeriodicBackupException {
-        File rootDir = Hudson.getInstance().getRootDir();
+        File rootDir = Jenkins.getActiveInstance().getRootDir();
         List<File> filesToBackup = Lists.newArrayList();
         addRootFiles(rootDir, filesToBackup);
         addJobFiles(rootDir, filesToBackup);
@@ -67,17 +69,18 @@ public class ConfigOnly extends FileManager {
         return filesToBackup;
     }
 
-    private void addRootFiles(File rootDir, List<File> filesToBackup) {
+    private void addRootFiles(File rootDir, List<File> filesToBackup) throws PeriodicBackupException {
         // First find the xml files in the home directory
-        File[] xmlsInRoot = rootDir.listFiles(Util.extensionFileFilter("xml"));
+        final File[] xmlsInRoot = Util.listFiles(rootDir, Util.extensionFileFilter("xml"));
         filesToBackup.addAll(Arrays.asList(xmlsInRoot));
     }
 
-    private void addJobFiles(File rootDir, List<File> filesToBackup) {
+    private void addJobFiles(File rootDir, List<File> filesToBackup) throws PeriodicBackupException {
         File jobsDir = new File(rootDir, "jobs");
         if (jobsDir.exists() && jobsDir.isDirectory()) {
             // Each job directory should have a config.xml file
-            File[] dirsInJobs = jobsDir.listFiles((FileFilter) FileFilterUtils.directoryFileFilter());
+            File[] dirsInJobs = Util.listFiles(jobsDir, FileFilterUtils.directoryFileFilter());
+            
             for (File job : dirsInJobs) {
                 File jobConfig = new File(job, "config.xml");
                 if (jobConfig.exists() && jobConfig.isFile()) {
@@ -85,12 +88,16 @@ public class ConfigOnly extends FileManager {
                     // There might be some config file from the Promotion plugin
                     File promotionDir = new File(job, "promotions");
                     if (promotionDir.exists()) {
-                        File[] promotionDirs = promotionDir.listFiles((FileFilter) FileFilterUtils.directoryFileFilter());
-                        for (File dir : promotionDirs) {
-                            File promotionConfig = new File(dir, "config.xml");
-                            if (promotionConfig.exists() && promotionConfig.isFile()) {
-                                filesToBackup.add(promotionConfig);
+                        try {
+                            File[] promotionDirs = Util.listFiles(promotionDir, FileFilterUtils.directoryFileFilter());
+                            for (File dir : promotionDirs) {
+                                File promotionConfig = new File(dir, "config.xml");
+                                if (promotionConfig.exists() && promotionConfig.isFile()) {
+                                    filesToBackup.add(promotionConfig);
+                                }
                             }
+                        } catch(PeriodicBackupException ex) {
+                            LOGGER.log(Level.WARNING, "Skipping the promotions for Job directory " + promotionDir.getAbsolutePath(), ex);
                         }
                     }
                 }
@@ -101,11 +108,11 @@ public class ConfigOnly extends FileManager {
         }
     }
 
-    private void addUserFiles(File rootDir, List<File> filesToBackup) {
+    private void addUserFiles(File rootDir, List<File> filesToBackup) throws PeriodicBackupException {
         File usersDir = new File(rootDir, "users");
         if (usersDir.exists() && usersDir.isDirectory()) {
             // Each user directory should have a config.xml file
-            File[] dirsInUsers = usersDir.listFiles((FileFilter) FileFilterUtils.directoryFileFilter());
+            File[] dirsInUsers =  Util.listFiles(usersDir, FileFilterUtils.directoryFileFilter());
             for (File user : dirsInUsers) {
                 File userConfig = new File(user, "config.xml");
                 if (userConfig.exists() && userConfig.isFile()) {

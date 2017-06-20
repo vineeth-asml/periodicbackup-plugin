@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import org.acegisecurity.AccessDeniedException;
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -205,12 +206,12 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
 
     protected XmlFile getConfigXml() {
         return new XmlFile(Hudson.XSTREAM,
-                new File(Hudson.getInstance().getRootDir(), "periodicBackup.xml"));
+                new File(Jenkins.getActiveInstance().getRootDir(), "periodicBackup.xml"));
     }
 
     @SuppressWarnings("unused")
     public String getRootDirectory() {
-        return Hudson.getInstance().getRootDir().getAbsolutePath();
+        return Jenkins.getActiveInstance().getRootDir().getAbsolutePath();
     }
 
     @RequirePOST
@@ -241,7 +242,7 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
     }
 
     public DescriptorImpl getDescriptor() {
-        return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class);
+        return Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class);
     }
 
     /**

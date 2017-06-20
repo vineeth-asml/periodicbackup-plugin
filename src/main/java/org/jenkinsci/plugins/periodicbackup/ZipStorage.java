@@ -26,7 +26,6 @@ package org.jenkinsci.plugins.periodicbackup;
 
 import com.google.common.collect.Sets;
 import hudson.Extension;
-import hudson.model.Hudson;
 import net.sf.json.JSONObject;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.zip.ZipArchiver;
@@ -39,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 public class ZipStorage extends Storage {
 
@@ -183,7 +183,7 @@ public class ZipStorage extends Storage {
      */
     private void addFile(File fileToStore) {
         try {
-            archiver.addFile(fileToStore, Util.getRelativePath(fileToStore, Hudson.getInstance().getRootDir()));
+            archiver.addFile(fileToStore, Util.getRelativePath(fileToStore, Jenkins.getActiveInstance().getRootDir()));
             currentArchiveFilesCount++;
             currentArchiveTotalFilesSize += fileToStore.length();
         } catch (ArchiverException e) {
