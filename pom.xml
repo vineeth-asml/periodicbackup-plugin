@@ -33,6 +33,12 @@
             <email>johno.crawford@gmail.com</email>
             <timezone>+1</timezone>
         </developer>
+        <developer>
+            <name>Oleg Nenashev</name>
+            <id>oleg_nenashev</id>
+            <email>o.v.nenashev@gmail.com</email>
+            <timezone>+1</timezone>
+        </developer>
     </developers>
 
     <dependencies>
