@@ -8,14 +8,15 @@
 
     <artifactId>periodicbackup</artifactId>
     <name>Periodic Backup</name>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.5-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <scm>
         <connection>scm:git:ssh://github.com/jenkinsci/periodicbackup-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/periodicbackup-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/periodicbackup-plugin.git</url>
-    </scm>
+      <tag>HEAD</tag>
+  </scm>
 
     <developers>
         <developer>
@@ -31,6 +32,12 @@
         <developer>
             <name>Johno Crawford</name>
             <email>johno.crawford@gmail.com</email>
+            <timezone>+1</timezone>
+        </developer>
+        <developer>
+            <name>Oleg Nenashev</name>
+            <id>oleg_nenashev</id>
+            <email>o.v.nenashev@gmail.com</email>
             <timezone>+1</timezone>
         </developer>
     </developers>
@@ -160,14 +167,14 @@
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
 </project>  

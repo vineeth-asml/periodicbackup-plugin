@@ -172,14 +172,20 @@ public class Util {
     
     /**
      * Secure version of the listFiles() logic
-     * @param directory Directory to be listed
+     * @param directory Directory to be listed       
      * @param fileFilter Optional file filter
-     * @return Files in the directory
+     * @return Files in the directory.
+     *         If the directory does not exist, an empty list will be returned
      * @throws PeriodicBackupException Whatever error
      */
     @Nonnull
     @Restricted(NoExternalUse.class)
     public static File[] listFiles(@Nonnull File directory, @CheckForNull FileFilter fileFilter) throws PeriodicBackupException {
+        if (!directory.exists()) {
+            // Not our business to check if the directory exists
+            return new File[0];
+        }
+        
         if (!directory.isDirectory()) {
             throw new PeriodicBackupException(formatMessage(directory, "File is not a directory"));
         }
