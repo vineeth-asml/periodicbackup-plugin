@@ -8,14 +8,15 @@
 
     <artifactId>periodicbackup</artifactId>
     <name>Periodic Backup</name>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.4</version>
     <packaging>hpi</packaging>
 
     <scm>
         <connection>scm:git:ssh://github.com/jenkinsci/periodicbackup-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/periodicbackup-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/periodicbackup-plugin.git</url>
-    </scm>
+      <tag>periodicbackup-1.4</tag>
+  </scm>
 
     <developers>
         <developer>
