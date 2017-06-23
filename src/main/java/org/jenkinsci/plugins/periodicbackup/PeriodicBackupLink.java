@@ -135,7 +135,7 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
     @Restricted(NoExternalUse.class)
     @RestrictedSince("1.4")
     public void doBackup(StaplerRequest req, StaplerResponse rsp) throws Exception {
-        Util.checkAdminPermission();
+        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
         backupNow = true;
         PeriodicBackup.get().doRun();
         message = "Creating backup...";
@@ -157,7 +157,7 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
     @Restricted(NoExternalUse.class)
     @RestrictedSince("1.4")
     public void doRestore(StaplerRequest req, StaplerResponse rsp, @QueryParameter("backupHash") int backupHash) throws IOException, PeriodicBackupException {
-        Util.checkAdminPermission();
+        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
         Map<Integer, BackupObject> backupObjectMap = Maps.newHashMap();
         // Populate the map with key=hashcode of value
         for (Location location : locationPlugins) {
@@ -260,9 +260,9 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
         @Restricted(NoExternalUse.class)
         @RestrictedSince("1.4")
         public FormValidation doTestCron(@QueryParameter String cron) throws AccessDeniedException {
+            Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);    
             try {
-                Util.checkAdminPermissionInFormValidation();
-                return FormValidation.ok(validateCron(cron));
+                return FormValidation.ok(validateCron(cron)); 
             } catch (FormValidation f) {
                 return f;
             }

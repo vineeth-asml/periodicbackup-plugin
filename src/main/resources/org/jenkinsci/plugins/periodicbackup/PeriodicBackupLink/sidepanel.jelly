@@ -28,7 +28,7 @@
     <l:side-panel>
         <l:tasks>
             <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%sidepanel.back}"/>
-            <l:task post="true" icon="plugin/periodicbackup/images/24x24/restore.png" href="${rootURL}/periodicbackup/restore"
+            <l:task icon="plugin/periodicbackup/images/24x24/restore.png" href="${rootURL}/periodicbackup"
                     title="${%sidepanel.restore}"/>
             <l:task post="true" icon="plugin/periodicbackup/images/24x24/backup.png" href="${rootURL}/periodicbackup/backup"
                     title="${%sidepanel.backup}"/>

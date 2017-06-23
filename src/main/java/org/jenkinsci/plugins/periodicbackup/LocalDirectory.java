@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -226,8 +227,8 @@ public class LocalDirectory extends Location {
         @Restricted(NoExternalUse.class)
         @RestrictedSince("1.4")
         public FormValidation doTestPath(@QueryParameter String path) throws AccessDeniedException {
+            Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER); 
             try {
-                Util.checkAdminPermissionInFormValidation();
                 return FormValidation.ok(validatePath(path));
             } catch (FormValidation f) {
                 return f;

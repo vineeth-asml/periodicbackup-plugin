@@ -27,7 +27,6 @@ package org.jenkinsci.plugins.periodicbackup;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import hudson.Functions;
-import hudson.model.Hudson;
 import hudson.util.FormValidation;
 
 import java.io.File;
@@ -40,6 +39,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 public class Util {
@@ -211,33 +211,4 @@ public class Util {
         bldr.append(extra);
         return bldr.toString();
     }
-    
-    /**
-     * Check that the current user has administrator permissions.
-     * @throws IOException Jenkins instance has not been started yet or shutdown is in progress.
-     * @throws AccessDeniedException Access denied
-     */
-    @Restricted(NoExternalUse.class)
-    public static void checkAdminPermission() throws IOException, AccessDeniedException {
-        Hudson hudson = Hudson.getInstance();
-        if(hudson == null) {
-            throw new IOException("Jenkins instance is not ready");
-        }
-        hudson.checkPermission(Hudson.ADMINISTER);
-    }
-    
-    /**
-     * Check that the current user has administrator permissions.
-     * @throws FormValidation Jenkins instance has not been started yet or shutdown is in progress.
-     * @throws AccessDeniedException No access permission.
-     *                               Although it is a runtime exception, it should never happen on valid use-cases of calling methods.
-     */
-    @Restricted(NoExternalUse.class)
-    public static void checkAdminPermissionInFormValidation() throws FormValidation, AccessDeniedException {
-        try {
-            checkAdminPermission();
-        } catch(IOException ex) {
-            throw FormValidation.warning(ex, "Cannot check the permissions");
-        }
-    } 
 }
