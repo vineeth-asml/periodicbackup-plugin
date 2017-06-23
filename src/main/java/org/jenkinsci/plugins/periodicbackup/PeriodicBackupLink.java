@@ -29,10 +29,12 @@ import antlr.ANTLRException;
 import com.google.common.collect.Maps;
 import hudson.BulkChange;
 import hudson.Extension;
-import hudson.Functions;
 import hudson.RestrictedSince;
 import hudson.XmlFile;
-import hudson.model.*;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.ManagementLink;
+import hudson.model.Saveable;
 import hudson.scheduler.CronTab;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -205,7 +207,7 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
     }
 
     protected XmlFile getConfigXml() {
-        return new XmlFile(Hudson.XSTREAM,
+        return new XmlFile(Jenkins.XSTREAM,
                 new File(Jenkins.getActiveInstance().getRootDir(), "periodicBackup.xml"));
     }
 
@@ -218,7 +220,7 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
     @Restricted(NoExternalUse.class)
     @RestrictedSince("1.4")
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException, ClassNotFoundException {
-        Functions.checkPermission(Hudson.ADMINISTER);
+        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);   
         JSONObject form = req.getSubmittedForm(); // Submitted configuration form
 
         // Persist the setting
