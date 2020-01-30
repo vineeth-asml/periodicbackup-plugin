@@ -69,7 +69,7 @@ public class FullBackup extends FileManager {
      * @param excludesString Optional list of directories to be excluded
      * @param baseDir Base directory
      */
-    FullBackup(@CheckForNull String excludesString, @CheckForNull boolean followSymbolicLinks, @Nonnull File baseDir) {
+    FullBackup(@CheckForNull String excludesString, boolean followSymbolicLinks, @Nonnull File baseDir) {
     	super();
     	this.excludesString = StringUtils.trimToNull(excludesString);
         this.followSymbolicLinks = followSymbolicLinks;
@@ -123,7 +123,6 @@ public class FullBackup extends FileManager {
         return excludesString;
     }
 
-    @CheckForNull
     public boolean isFollowSymbolicLinks() {
         return followSymbolicLinks;
     }
