@@ -52,14 +52,15 @@ public class FullBackup extends FileManager {
     @CheckForNull
     private final String excludesString;
 	private final File baseDir;
+	private final boolean followSymbolicLinks;
 
     public FullBackup() {
-        this(null);
+        this(null, false);
     }
 
     @DataBoundConstructor
-	public FullBackup(@CheckForNull String excludesString) {
-		this(excludesString, Jenkins.getActiveInstance().getRootDir());
+	public FullBackup(@CheckForNull String excludesString, boolean followSymbolicLinks) {
+		this(excludesString, followSymbolicLinks, Jenkins.getActiveInstance().getRootDir());
 	}
 
     /**
@@ -68,9 +69,10 @@ public class FullBackup extends FileManager {
      * @param excludesString Optional list of directories to be excluded
      * @param baseDir Base directory
      */
-    FullBackup(@CheckForNull String excludesString, @Nonnull File baseDir) {
+    FullBackup(@CheckForNull String excludesString, boolean followSymbolicLinks, @Nonnull File baseDir) {
     	super();
     	this.excludesString = StringUtils.trimToNull(excludesString);
+        this.followSymbolicLinks = followSymbolicLinks;
 		this.baseDir = baseDir;
     	this.restorePolicy = new ReplaceRestorePolicy();
     }
@@ -83,7 +85,7 @@ public class FullBackup extends FileManager {
     @Override
     public Iterable<File> getFilesToBackup() {
         DirectoryScanner directoryScanner = new DirectoryScanner(); // It will scan all files inside the root directory
-        directoryScanner.setFollowSymlinks(false);
+        directoryScanner.setFollowSymlinks(followSymbolicLinks);
         directoryScanner.setBasedir(baseDir);
         directoryScanner.setExcludes(Iterables.toArray(getExcludes(), String.class));
         directoryScanner.scan();
@@ -119,6 +121,10 @@ public class FullBackup extends FileManager {
     @CheckForNull
     public String getExcludesString() {
         return excludesString;
+    }
+
+    public boolean isFollowSymbolicLinks() {
+        return followSymbolicLinks;
     }
 
     @SuppressWarnings("unused")
