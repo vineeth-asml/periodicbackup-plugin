@@ -27,7 +27,7 @@ package org.jenkinsci.plugins.periodicbackup;
 import java.util.Collections;
 import java.util.Optional;
 
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -47,9 +47,8 @@ public class AmazonUtil  {
         if (!StringUtils.isEmpty(credentialsId)) {
         	builder.setCredentials(getCredentials(credentialsId));
         }
-        AmazonS3 client = builder.build();
-        
-        return client;
+      
+        return builder.build();
     }
 
     public static AmazonWebServicesCredentials getCredentials(String credentialsId) {
