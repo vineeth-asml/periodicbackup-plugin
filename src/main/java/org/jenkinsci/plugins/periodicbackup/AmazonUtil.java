@@ -37,17 +37,18 @@ import com.cloudbees.plugins.credentials.CredentialsProvider;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
 
-public class AmazonUtil  {
+public class AmazonUtil {
     public static AmazonS3 getAmazonS3Client(String region, String credentialsId) {
         AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
-        // Use credentials if provided. If not, it'll use the credentials in aws profile ~/.aws from host
+        // Use credentials if provided. If not, it'll use the credentials in aws profile
+        // ~/.aws from host
         if (!StringUtils.isEmpty(region)) {
-        	builder.setRegion(region);
+            builder.setRegion(region);
         }
         if (!StringUtils.isEmpty(credentialsId)) {
-        	builder.setCredentials(getCredentials(credentialsId));
+            builder.setCredentials(getCredentials(credentialsId));
         }
-      
+
         return builder.build();
     }
 

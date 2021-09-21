@@ -66,238 +66,236 @@ import jenkins.model.Jenkins;
  */
 public class S3 extends Location {
 
-	private String bucket;
-	private String tmpDir;
-	private String region;
-	private String credentialsId;
+    private String bucket;
+    private String tmpDir;
+    private String region;
+    private String credentialsId;
 
-	private static final Logger LOGGER = Logger.getLogger(S3.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(S3.class.getName());
 
-	@DataBoundConstructor
-	public S3(String bucket, boolean enabled, String tmpDir, String region, String credentialsId) {
-		super(enabled);
-		this.bucket = bucket;
-		this.setTmpDir(tmpDir);
-		this.setRegion(region);
-		this.setCredentialsId(credentialsId);
-	}
+    @DataBoundConstructor
+    public S3(String bucket, boolean enabled, String tmpDir, String region, String credentialsId) {
+        super(enabled);
+        this.bucket = bucket;
+        this.setTmpDir(tmpDir);
+        this.setRegion(region);
+        this.setCredentialsId(credentialsId);
+    }
 
-	@SuppressWarnings("deprecation")
-	@Override
-	public Iterable<BackupObject> getAvailableBackups() {
-		AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+    @SuppressWarnings("deprecation")
+    @Override
+    public Iterable<BackupObject> getAvailableBackups() {
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
 
-		List<S3ObjectSummary> objectSummarys = client.listObjects(bucket).getObjectSummaries();
-		List<String> backupObjectFileNames = new ArrayList<String>();
-		List<File> backupObjectFiles = new ArrayList<File>();
-		for (S3ObjectSummary objectSummary : objectSummarys) {
-			if (StringUtils.endsWith(objectSummary.getKey(), BackupObject.EXTENSION)) {
-				backupObjectFileNames.add(objectSummary.getKey());
-				try {
-					File dir = new File(tmpDir);
-					if (!dir.isDirectory()) {
-						if (!dir.mkdir()) {
-							LOGGER.warning("Unable to make temp directory: " + tmpDir);
-							return null;
-						}
-					}
-					File file = new File(dir + objectSummary.getKey());
-					IOUtils.copy(client.getObject(bucket, objectSummary.getKey()).getObjectContent(),
-							new FileOutputStream(file));
-					backupObjectFiles.add(file);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
+        List<S3ObjectSummary> objectSummarys = client.listObjects(bucket).getObjectSummaries();
+        List<String> backupObjectFileNames = new ArrayList<String>();
+        List<File> backupObjectFiles = new ArrayList<File>();
+        for (S3ObjectSummary objectSummary : objectSummarys) {
+            if (StringUtils.endsWith(objectSummary.getKey(), BackupObject.EXTENSION)) {
+                backupObjectFileNames.add(objectSummary.getKey());
+                try {
+                    File dir = new File(tmpDir);
+                    if (!dir.isDirectory()) {
+                        if (!dir.mkdir()) {
+                            LOGGER.warning("Unable to make temp directory: " + tmpDir);
+                            return null;
+                        }
+                    }
+                    File file = new File(dir + objectSummary.getKey());
+                    IOUtils.copy(client.getObject(bucket, objectSummary.getKey()).getObjectContent(),
+                            new FileOutputStream(file));
+                    backupObjectFiles.add(file);
+                } catch (Exception e) {
+                    LOGGER.warning("Exception while getting available backups from S3: " + e);
+                }
+            }
+        }
 
-		// The sorting will be performed according to the timestamp
-		Collections.sort(backupObjectFileNames);
+        // The sorting will be performed according to the timestamp
+        Collections.sort(backupObjectFileNames);
 
-		return Iterables.transform(backupObjectFiles, BackupObject.getFromFile());
-	}
+        return Iterables.transform(backupObjectFiles, BackupObject.getFromFile());
+    }
 
-	@Override
-	public void storeBackupInLocation(Iterable<File> archives, File backupObjectFile) throws IOException {
-		if (this.enabled && isBucketExists()) {
-			AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
-			for (File archive : archives) {
-				LOGGER.info(archive.getName() + " copying to s3 bucket " + bucket);
-				client.putObject(bucket, archive.getName(), archive);
-				LOGGER.info(archive.getName() + " copied to s3 bucket " + bucket);
-			}
-			File dir = new File(tmpDir);
-			if (!dir.isDirectory()) {
-				if (!dir.mkdir()) {
-					LOGGER.warning("Unable to make temp directory: " + tmpDir);
-					throw new IOException();
-				}
-			}
-			File backupObjectFileDestination = new File(dir, backupObjectFile.getName());
-			Files.copy(backupObjectFile, backupObjectFileDestination);
-			client.putObject(bucket, backupObjectFile.getName(), backupObjectFileDestination);
-			LOGGER.info(backupObjectFile.getName() + " copied to " + backupObjectFileDestination.getAbsolutePath());
-		} else {
-			LOGGER.warning("skipping location " + this.bucket + " since it is disabled or it does not exist.");
-		}
-	}
+    @Override
+    public void storeBackupInLocation(Iterable<File> archives, File backupObjectFile) throws IOException {
+        if (this.enabled && isBucketExists()) {
+            AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+            for (File archive : archives) {
+                LOGGER.info(archive.getName() + " copying to s3 bucket " + bucket);
+                client.putObject(bucket, archive.getName(), archive);
+                LOGGER.info(archive.getName() + " copied to s3 bucket " + bucket);
+            }
+            File dir = new File(tmpDir);
+            if (!dir.isDirectory()) {
+                if (!dir.mkdir()) {
+                    LOGGER.warning("Unable to make temp directory: " + tmpDir);
+                    throw new IOException();
+                }
+            }
+            File backupObjectFileDestination = new File(dir, backupObjectFile.getName());
+            Files.copy(backupObjectFile, backupObjectFileDestination);
+            client.putObject(bucket, backupObjectFile.getName(), backupObjectFileDestination);
+            LOGGER.info(backupObjectFile.getName() + " copied to " + backupObjectFileDestination.getAbsolutePath());
+        } else {
+            LOGGER.warning("skipping location " + this.bucket + " since it is disabled or it does not exist.");
+        }
+    }
 
-	@Override
-	public Iterable<File> retrieveBackupFromLocation(final BackupObject backup, File tempDir)
-			throws IOException, PeriodicBackupException {
-		AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+    @Override
+    public Iterable<File> retrieveBackupFromLocation(final BackupObject backup, File tempDir)
+            throws IOException, PeriodicBackupException {
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
 
-		List<String> backpFileNames = new ArrayList<String>();
-		List<S3ObjectSummary> objectSummarys = client.listObjects(bucket).getObjectSummaries();
-		for (S3ObjectSummary objectSummary : objectSummarys) {
-			if (objectSummary.getKey()
-					.contains(Util.getFormattedDate(BackupObject.FILE_TIMESTAMP_PATTERN, backup.getTimestamp()))
-					&& !objectSummary.getKey().endsWith(BackupObject.EXTENSION)) {
-				backpFileNames.add(objectSummary.getKey());
-			}
-		}
+        List<String> backpFileNames = new ArrayList<String>();
+        List<S3ObjectSummary> objectSummarys = client.listObjects(bucket).getObjectSummaries();
+        for (S3ObjectSummary objectSummary : objectSummarys) {
+            if (objectSummary.getKey()
+                    .contains(Util.getFormattedDate(BackupObject.FILE_TIMESTAMP_PATTERN, backup.getTimestamp()))
+                    && !objectSummary.getKey().endsWith(BackupObject.EXTENSION)) {
+                backpFileNames.add(objectSummary.getKey());
+            }
+        }
 
-		Set<File> archivesInTemp = Sets.newHashSet();
+        Set<File> archivesInTemp = Sets.newHashSet();
 
-		// Copy every archive to the temp dir
-		for (String backupFilename : backpFileNames) {
-			File copiedFile = new File(tempDir, backupFilename);
-			try {
-				IOUtils.copy(client.getObject(bucket, backupFilename).getObjectContent(),
-						new FileOutputStream(copiedFile));
-				archivesInTemp.add(copiedFile);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+        // Copy every archive to the temp dir
+        for (String backupFilename : backpFileNames) {
+            File copiedFile = new File(tempDir, backupFilename);
+            try {
+                IOUtils.copy(client.getObject(bucket, backupFilename).getObjectContent(),
+                        new FileOutputStream(copiedFile));
+                archivesInTemp.add(copiedFile);
+            } catch (Exception e) {
+                LOGGER.warning("Exception while retriving the backup file from S3: " + e);
+            }
+        }
 
-		return archivesInTemp;
-	}
+        return archivesInTemp;
+    }
 
-	@Override
-	public void deleteBackupFiles(BackupObject backupObject) {
-		LOGGER.info("Deleting backupObject...");
-		String filenamePart = Util.generateFileNameBase(backupObject.getTimestamp());
-		AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+    @Override
+    public void deleteBackupFiles(BackupObject backupObject) {
+        LOGGER.info("Deleting backupObject...");
+        String filenamePart = Util.generateFileNameBase(backupObject.getTimestamp());
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
 
-		List<S3ObjectSummary> objectSummarys = client.listObjects(bucket).getObjectSummaries();
-		for (S3ObjectSummary objectSummary : objectSummarys) {
-			if (StringUtils.contains(objectSummary.getKey(), filenamePart)) {
-				LOGGER.info("Deleting backupObject..." + objectSummary.getKey());
-				client.deleteObject(bucket, objectSummary.getKey());
-				LOGGER.info("Deleted backupObject..." + objectSummary.getKey());
-			}
-		}
-	}
+        List<S3ObjectSummary> objectSummarys = client.listObjects(bucket).getObjectSummaries();
+        for (S3ObjectSummary objectSummary : objectSummarys) {
+            if (StringUtils.contains(objectSummary.getKey(), filenamePart)) {
+                LOGGER.info("Deleting backupObject..." + objectSummary.getKey());
+                client.deleteObject(bucket, objectSummary.getKey());
+                LOGGER.info("Deleted backupObject..." + objectSummary.getKey());
+            }
+        }
+    }
 
-	public String getDisplayName() {
-		return "S3 bucket: " + bucket;
-	}
+    public String getDisplayName() {
+        return "S3 bucket: " + bucket;
+    }
 
-	@SuppressWarnings("unused")
-	public String getBucket() {
-		return bucket;
-	}
+    @SuppressWarnings("unused")
+    public String getBucket() {
+        return bucket;
+    }
 
-	@SuppressWarnings("unused")
-	public void setBucket(String bucket) {
-		this.bucket = bucket;
-	}
+    @SuppressWarnings("unused")
+    public void setBucket(String bucket) {
+        this.bucket = bucket;
+    }
 
-	@SuppressWarnings("unused")
-	public String getTmpDir() {
-		return tmpDir;
-	}
+    @SuppressWarnings("unused")
+    public String getTmpDir() {
+        return tmpDir;
+    }
 
-	@SuppressWarnings("unused")
-	public void setTmpDir(String tmpDir) {
-		this.tmpDir = tmpDir;
-	}
+    @SuppressWarnings("unused")
+    public void setTmpDir(String tmpDir) {
+        this.tmpDir = tmpDir;
+    }
 
-	private boolean isBucketExists() {
-		AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+    private boolean isBucketExists() {
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
 
-		return client.doesBucketExistV2(bucket);
-	}
+        return client.doesBucketExistV2(bucket);
+    }
 
-	public String getRegion() {
-		return region;
-	}
+    public String getRegion() {
+        return region;
+    }
 
-	public void setRegion(String region) {
-		this.region = region;
-	}
+    public void setRegion(String region) {
+        this.region = region;
+    }
 
-	public String getCredentialsId() {
-		return credentialsId;
-	}
+    public String getCredentialsId() {
+        return credentialsId;
+    }
 
-	public void setCredentialsId(String credentialsId) {
-		this.credentialsId = credentialsId;
-	}
+    public void setCredentialsId(String credentialsId) {
+        this.credentialsId = credentialsId;
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (o instanceof S3) {
-			S3 that = (S3) o;
-			return Objects.equal(this.bucket, that.bucket) && Objects.equal(this.enabled, that.enabled);
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof S3) {
+            S3 that = (S3) o;
+            return Objects.equal(this.bucket, that.bucket) && Objects.equal(this.enabled, that.enabled);
+        }
+        return false;
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hashCode(bucket, enabled);
-	}
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(bucket, enabled);
+    }
 
-	@SuppressWarnings("unused")
-	@Extension
-	public static class DescriptorImpl extends LocationDescriptor {
-		public String getDisplayName() {
-			return "Amazon S3";
-		}
+    @SuppressWarnings("unused")
+    @Extension
+    public static class DescriptorImpl extends LocationDescriptor {
+        public String getDisplayName() {
+            return "Amazon S3";
+        }
 
-		@RequirePOST
-		@Restricted(NoExternalUse.class)
-		@RestrictedSince("1.4")
-		public FormValidation doTestBucket(@QueryParameter String bucket, @QueryParameter String region,
-				@QueryParameter String credentialsId) throws AccessDeniedException {
-			Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
-			try {
-				return FormValidation.ok(validatePath(bucket, region, credentialsId));
-			} catch (FormValidation f) {
-				return f;
-			}
-		}
+        @RequirePOST
+        @Restricted(NoExternalUse.class)
+        @RestrictedSince("1.4")
+        public FormValidation doTestBucket(@QueryParameter String bucket, @QueryParameter String region,
+                @QueryParameter String credentialsId) throws AccessDeniedException {
+            Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
+            try {
+                return FormValidation.ok(validatePath(bucket, region, credentialsId));
+            } catch (FormValidation f) {
+                return f;
+            }
+        }
 
-		private String validatePath(String bucket, String region, String credentialsId) throws FormValidation {
-			AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
-			if (!client.doesBucketExistV2(bucket)) {
-				throw FormValidation.error(bucket + " doesn't exist or I don't have access to it!");
-			}
-			return "bucket \"" + bucket + "\" OK";
-		}
+        private String validatePath(String bucket, String region, String credentialsId) throws FormValidation {
+            AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+            if (!client.doesBucketExistV2(bucket)) {
+                throw FormValidation.error(bucket + " doesn't exist or I don't have access to it!");
+            }
+            return "bucket \"" + bucket + "\" OK";
+        }
 
-		public ListBoxModel doFillRegionItems() {
-			ListBoxModel regions = new ListBoxModel();
-			regions.add("Auto", "");
-			for (Regions s : Regions.values()) {
-				regions.add(s.getDescription(), s.getName());
-			}
-			return regions;
-		}
+        public ListBoxModel doFillRegionItems() {
+            ListBoxModel regions = new ListBoxModel();
+            regions.add("Auto", "");
+            for (Regions s : Regions.values()) {
+                regions.add(s.getDescription(), s.getName());
+            }
+            return regions;
+        }
 
-		@RequirePOST
-		public ListBoxModel doFillCredentialsIdItems() {
-			Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-			ListBoxModel credentials = new ListBoxModel();
-			credentials.add("IAM instance Profile/user AWS configuration", "");
-			credentials.addAll(CredentialsProvider.listCredentials(AmazonWebServicesCredentials.class, Jenkins.get(),
-					ACL.SYSTEM, Collections.emptyList(),
-					CredentialsMatchers.instanceOf(AmazonWebServicesCredentials.class)));
-			return credentials;
-		}
-	}
+        @RequirePOST
+        public ListBoxModel doFillCredentialsIdItems() {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            ListBoxModel credentials = new ListBoxModel();
+            credentials.add("IAM instance Profile/user AWS configuration", "");
+            credentials.addAll(CredentialsProvider.listCredentials(AmazonWebServicesCredentials.class, Jenkins.get(),
+                    ACL.SYSTEM, Collections.emptyList(),
+                    CredentialsMatchers.instanceOf(AmazonWebServicesCredentials.class)));
+            return credentials;
+        }
+    }
 }
