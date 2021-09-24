@@ -62,7 +62,7 @@ import jenkins.model.Jenkins;
 
 /**
  *
- * LocalDirectory defines the local folder to store the backup files
+ * S3 defines Amazon S3 (Simple Storage Service) to store the backup files
  */
 public class S3 extends Location {
 
