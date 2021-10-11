@@ -4,10 +4,6 @@
 package org.jenkinsci.plugins.periodicbackup;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,12 +11,16 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.google.common.collect.Iterables;
+
+import static hudson.Functions.isWindows;
 
 /**
  * @author marc
@@ -39,6 +39,11 @@ public class FullBackupTest {
 
 	private static final List<File> ALL_FILES = Arrays.asList(CONFIG_XML, BUILD_XML, JOB_CONFIG_XML, NEXT_BUILD_NUMBER,
 			PLUGIN);
+
+	@Before
+	public void unixOnly() {
+		Assume.assumeFalse(isWindows());
+	}
 
 	@Parameters(name = "{0}")
 	public static List<Object[]> getTestData() {
