@@ -18,6 +18,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
+          distribution: 'adopt'
           java-version: ${{ matrix.jdk }}
       - name: Build with Gradle
         run: mvn --batch-mode --update-snapshots verify
