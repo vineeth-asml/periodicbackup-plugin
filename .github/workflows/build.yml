@@ -1,0 +1,23 @@
+name: Build Periodic Backup plugin
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build on JDK ${{ matrix.jdk }}
+    strategy:
+      matrix:
+        jdk: [ '8', '11' ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Sync Repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.jdk }}
+      - name: Build with Gradle
+        run: mvn --batch-mode --update-snapshots verify
