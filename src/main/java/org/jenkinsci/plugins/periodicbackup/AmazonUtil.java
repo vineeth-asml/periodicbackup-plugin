@@ -27,18 +27,19 @@ package org.jenkinsci.plugins.periodicbackup;
 import java.util.Collections;
 import java.util.Optional;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import org.apache.commons.lang.StringUtils;
+
 import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
 
-public class AmazonUtil {
-    public static AmazonS3 getAmazonS3Client(String region, String credentialsId) {
+class AmazonUtil {
+
+    static AmazonS3 getAmazonS3Client(String region, String credentialsId) {
         AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
         // Use credentials if provided. If not, it'll use the credentials in aws profile
         // ~/.aws from host
@@ -52,7 +53,7 @@ public class AmazonUtil {
         return builder.build();
     }
 
-    public static AmazonWebServicesCredentials getCredentials(String credentialsId) {
+    static AmazonWebServicesCredentials getCredentials(String credentialsId) {
         Optional<AmazonWebServicesCredentials> credential = CredentialsProvider
                 .lookupCredentials(AmazonWebServicesCredentials.class, Jenkins.get(), ACL.SYSTEM,
                         Collections.emptyList())
