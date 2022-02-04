@@ -187,7 +187,7 @@ public class PeriodicBackupLink extends ManagementLink implements Describable<Pe
 
     @Override
     public String getIconFileName() {
-        return "/plugin/periodicbackup/images/48x48/periodicbackup.png";
+        return "/plugin/periodicbackup/images/periodicbackup.svg";
     }
 
     @Override
