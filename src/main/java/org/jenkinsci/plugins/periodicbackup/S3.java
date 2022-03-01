@@ -107,7 +107,6 @@ public class S3 extends Location {
                 Path backupFile = Paths.get(objectSummary.getKey()).getFileName();
                 backupFile = Paths.get(tmpDir, backupFile.toString());
                 File file = backupFile.toFile();
-                LOGGER.info(backupFile.toString());
                 try {
                     IOUtils.copy(client.getObject(bucket, objectSummary.getKey()).getObjectContent(),
                             new FileOutputStream(file));
@@ -151,6 +150,7 @@ public class S3 extends Location {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Iterable<File> retrieveBackupFromLocation(final BackupObject backup, File tempDir)
             throws IOException, PeriodicBackupException {
@@ -170,7 +170,9 @@ public class S3 extends Location {
 
         // Copy every archive to the temp dir
         for (String backupFilename : backpFileNames) {
-            File copiedFile = new File(tempDir, backupFilename);
+            Path p = Paths.get(backupFilename).getFileName();
+            p = Paths.get(tmpDir, p.toString());
+            File copiedFile = p.toFile();
             try {
                 IOUtils.copy(client.getObject(bucket, backupFilename).getObjectContent(),
                         new FileOutputStream(copiedFile));
@@ -259,7 +261,7 @@ public class S3 extends Location {
         return Objects.hashCode(bucket, enabled);
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("deprecation")
     @Extension
     public static class DescriptorImpl extends LocationDescriptor {
         public String getDisplayName() {
