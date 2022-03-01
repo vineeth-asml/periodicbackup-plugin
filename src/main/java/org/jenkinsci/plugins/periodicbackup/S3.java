@@ -105,6 +105,10 @@ public class S3 extends Location {
                     }
                 }
                 Path backupFile = Paths.get(objectSummary.getKey()).getFileName();
+                if (backupFile == null) {
+                    LOGGER.warning("Unable to get file name from: " + objectSummary.getKey());
+                    return null;
+                }
                 backupFile = Paths.get(tmpDir, backupFile.toString());
                 File file = backupFile.toFile();
                 try {
@@ -171,6 +175,10 @@ public class S3 extends Location {
         // Copy every archive to the temp dir
         for (String backupFilename : backpFileNames) {
             Path p = Paths.get(backupFilename).getFileName();
+            if (p == null) {
+                LOGGER.warning("Unable to get file name from: " + backupFilename);
+                return null;
+            }
             p = Paths.get(tmpDir, p.toString());
             File copiedFile = p.toFile();
             try {
