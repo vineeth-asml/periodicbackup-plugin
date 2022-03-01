@@ -231,6 +231,14 @@ public class S3 extends Location {
         return client.doesBucketExistV2(bucket);
     }
 
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
     public String getRegion() {
         return region;
     }
