@@ -69,7 +69,7 @@ import jenkins.model.Jenkins;
 public class S3 extends Location {
 
     private String bucket;
-    private String prefix = "";
+    private String prefix;
     private String tmpDir;
     private String region;
     private String credentialsId;
@@ -77,9 +77,10 @@ public class S3 extends Location {
     private static final Logger LOGGER = Logger.getLogger(S3.class.getName());
 
     @DataBoundConstructor
-    public S3(String bucket, boolean enabled, String tmpDir, String region, String credentialsId) {
+    public S3(String bucket, String prefix, boolean enabled, String tmpDir, String region, String credentialsId) {
         super(enabled);
         this.bucket = bucket;
+        this.prefix = prefix;
         this.setTmpDir(tmpDir);
         this.setRegion(region);
         this.setCredentialsId(credentialsId);
@@ -96,15 +97,18 @@ public class S3 extends Location {
         for (S3ObjectSummary objectSummary : objectSummarys) {
             if (StringUtils.endsWith(objectSummary.getKey(), BackupObject.EXTENSION)) {
                 backupObjectFileNames.add(objectSummary.getKey());
-                try {
-                    File dir = new File(tmpDir);
-                    if (!dir.isDirectory()) {
-                        if (!dir.mkdir()) {
-                            LOGGER.warning("Unable to make temp directory: " + tmpDir);
-                            return null;
-                        }
+                File dir = new File(tmpDir);
+                if (!dir.isDirectory()) {
+                    if (!dir.mkdir()) {
+                        LOGGER.warning("Unable to make temp directory: " + tmpDir);
+                        return null;
                     }
-                    File file = new File(dir + objectSummary.getKey());
+                }
+                Path backupFile = Paths.get(objectSummary.getKey()).getFileName();
+                backupFile = Paths.get(tmpDir, backupFile.toString());
+                File file = backupFile.toFile();
+                LOGGER.info(backupFile.toString());
+                try {
                     IOUtils.copy(client.getObject(bucket, objectSummary.getKey()).getObjectContent(),
                             new FileOutputStream(file));
                     backupObjectFiles.add(file);
