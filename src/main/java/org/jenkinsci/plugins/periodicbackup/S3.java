@@ -27,6 +27,7 @@ package org.jenkinsci.plugins.periodicbackup;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
@@ -79,47 +80,30 @@ public class S3 extends Location {
         this.setCredentialsId(credentialsId);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public Iterable<BackupObject> getAvailableBackups() {
         AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
 
         List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
-        List<String> backupObjectFileNames = new ArrayList<String>();
-        List<File> backupObjectFiles = new ArrayList<File>();
-        for (S3ObjectSummary objectSummary : objectSummarys) {
-            if (StringUtils.endsWith(objectSummary.getKey(), BackupObject.EXTENSION)) {
-                backupObjectFileNames.add(objectSummary.getKey());
-                File dir = new File(tmpDir);
-                if (!dir.isDirectory()) {
-                    if (!dir.mkdir()) {
-                        LOGGER.warning("Unable to make temp directory: " + tmpDir);
-                        return null;
-                    }
-                }
-                Path backupFile = Paths.get(objectSummary.getKey()).getFileName();
-                if (backupFile == null) {
-                    LOGGER.warning("Unable to get file name from: " + objectSummary.getKey());
-                    return null;
-                }
-                backupFile = Paths.get(tmpDir, backupFile.toString());
-                File file = backupFile.toFile();
-                try {
-                    IOUtils.copy(client.getObject(bucket, objectSummary.getKey()).getObjectContent(),
-                            new FileOutputStream(file));
-                    backupObjectFiles.add(file);
-                } catch (Exception e) {
-                    LOGGER.warning("Exception while getting available backups from S3: " + e);
-                }
-            }
-        }
-
-        // The sorting will be performed according to the timestamp
-        return backupObjectFiles.stream()
-                .map(BackupObject.getFromFile()::apply)
+        return objectSummarys
+                .stream()
+                .filter(objectSummary ->
+                        StringUtils.endsWith(objectSummary.getKey(), BackupObject.EXTENSION)
+                )
+                .map(
+                        objectSummary -> {
+                            try {
+                                S3ObjectInputStream content = client.getObject(bucket, objectSummary.getKey()).getObjectContent();
+                                return BackupObject.getFromInputStream().apply(content);
+                            } catch (Exception e) {
+                                LOGGER.warning("Unable to get file name from: " + objectSummary.getKey());
+                                return null;
+                            }
+                        }
+                )
+                .filter(java.util.Objects::nonNull)
                 .sorted(Comparator.comparing(BackupObject::getTimestamp))
                 ::iterator;
-
     }
 
     @Override
