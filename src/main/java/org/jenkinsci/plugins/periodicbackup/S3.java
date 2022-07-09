@@ -108,9 +108,17 @@ public class S3 extends Location {
     }
 
     private boolean isMatchPrefix(String key) {
-        Path folderInS3 = Paths.get(key).getParent();
-        Path toTest = StringUtils.isEmpty(prefix) ? null : Paths.get(prefix);
-        return java.util.Objects.equals(folderInS3, toTest);
+        Path s3ParentFolder = Paths.get(key).getParent();
+        if (s3ParentFolder == null) {
+            return StringUtils.isEmpty(prefix);
+        } else {
+            if (StringUtils.isEmpty(prefix)) {
+                return false;
+            } else {
+                return s3ParentFolder.startsWith(prefix);
+            }
+        }
+
 
     }
 
