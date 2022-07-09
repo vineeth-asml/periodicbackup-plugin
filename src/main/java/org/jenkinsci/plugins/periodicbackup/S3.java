@@ -33,15 +33,14 @@ import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.google.common.base.Objects;
-import com.google.common.collect.Sets;
 import hudson.Extension;
 import hudson.RestrictedSince;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
-import hudson.util.IOUtils;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -55,7 +54,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -86,17 +87,17 @@ public class S3 extends Location {
 
         List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
         return objectSummarys
-                .stream()
+                .parallelStream()
                 .filter(objectSummary ->
                         StringUtils.endsWith(objectSummary.getKey(), BackupObject.EXTENSION)
+                                && isMatchPrefix(objectSummary.getKey())
                 )
-                .map(
-                        objectSummary -> {
+                .map(objectSummary -> {
                             try {
                                 S3ObjectInputStream content = client.getObject(bucket, objectSummary.getKey()).getObjectContent();
                                 return BackupObject.getFromInputStream().apply(content);
                             } catch (Exception e) {
-                                LOGGER.warning("Unable to get file name from: " + objectSummary.getKey());
+                                LOGGER.warning("Exception while getting available backups from S3: " + e);
                                 return null;
                             }
                         }
@@ -104,6 +105,13 @@ public class S3 extends Location {
                 .filter(java.util.Objects::nonNull)
                 .sorted(Comparator.comparing(BackupObject::getTimestamp))
                 ::iterator;
+    }
+
+    private boolean isMatchPrefix(String key) {
+        Path folderInS3 = Paths.get(key).getParent();
+        Path toTest = StringUtils.isEmpty(prefix) ? null : Paths.get(prefix);
+        return java.util.Objects.equals(folderInS3, toTest);
+
     }
 
     @Override
@@ -132,43 +140,40 @@ public class S3 extends Location {
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public Iterable<File> retrieveBackupFromLocation(final BackupObject backup, File tempDir)
             throws IOException, PeriodicBackupException {
         AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
 
-        List<String> backpFileNames = new ArrayList<String>();
         List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
-        for (S3ObjectSummary objectSummary : objectSummarys) {
-            if (objectSummary.getKey()
-                    .contains(Util.getFormattedDate(BackupObject.FILE_TIMESTAMP_PATTERN, backup.getTimestamp()))
-                    && !objectSummary.getKey().endsWith(BackupObject.EXTENSION)) {
-                backpFileNames.add(objectSummary.getKey());
-            }
-        }
-
-        Set<File> archivesInTemp = Sets.newHashSet();
-
-        // Copy every archive to the temp dir
-        for (String backupFilename : backpFileNames) {
-            Path p = Paths.get(backupFilename).getFileName();
-            if (p == null) {
-                LOGGER.warning("Unable to get file name from: " + backupFilename);
-                return null;
-            }
-            p = Paths.get(tmpDir, p.toString());
-            File copiedFile = p.toFile();
-            try {
-                IOUtils.copy(client.getObject(bucket, backupFilename).getObjectContent(),
-                        new FileOutputStream(copiedFile));
-                archivesInTemp.add(copiedFile);
-            } catch (Exception e) {
-                LOGGER.warning("Exception while retriving the backup file from S3: " + e);
-            }
-        }
-
-        return archivesInTemp;
+        return objectSummarys
+                .parallelStream()
+                .filter(objectSummary -> objectSummary.getKey()
+                        .contains(Util.getFormattedDate(BackupObject.FILE_TIMESTAMP_PATTERN, backup.getTimestamp()))
+                        && !objectSummary.getKey().endsWith(BackupObject.EXTENSION)
+                        && isMatchPrefix(objectSummary.getKey()))
+                .map(S3ObjectSummary::getKey)
+                .map(backupFilename -> {
+                            Path p = Paths.get(backupFilename).getFileName();
+                            if (p == null) {
+                                LOGGER.warning("Unable to get file name from: " + backupFilename);
+                                return null;
+                            }
+                            p = Paths.get(tmpDir, p.toString());
+                            File copiedFile = p.toFile();
+                            try {
+                                LOGGER.fine("Copying from: " + bucket + " > " + backupFilename + " to " + copiedFile.getAbsolutePath());
+                                IOUtils.copy(client.getObject(bucket, backupFilename).getObjectContent(),
+                                        new FileOutputStream(copiedFile));
+                                return copiedFile;
+                            } catch (Exception e) {
+                                LOGGER.warning("Exception while retriving the backup file from S3: " + e);
+                                return null;
+                            }
+                        }
+                )
+                .filter(java.util.Objects::nonNull)
+                ::iterator;
     }
 
     private List<S3ObjectSummary> getObjectSummaries(AmazonS3 client) {
@@ -262,7 +267,11 @@ public class S3 extends Location {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(bucket, enabled);
+        if (StringUtils.isEmpty(prefix)) {
+            return Objects.hashCode(bucket, enabled);
+        } else {
+            return Objects.hashCode(bucket, enabled, prefix);
+        }
     }
 
     @SuppressWarnings("deprecation")
