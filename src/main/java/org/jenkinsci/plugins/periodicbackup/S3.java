@@ -24,36 +24,15 @@
 
 package org.jenkinsci.plugins.periodicbackup;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import org.acegisecurity.AccessDeniedException;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.google.common.base.Objects;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
-
 import hudson.Extension;
 import hudson.RestrictedSince;
 import hudson.security.ACL;
@@ -61,9 +40,24 @@ import hudson.util.FormValidation;
 import hudson.util.IOUtils;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
+import org.acegisecurity.AccessDeniedException;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.logging.Logger;
 
 /**
- *
  * S3 defines Amazon S3 (Simple Storage Service) to store the backup files
  */
 public class S3 extends Location {
@@ -77,10 +71,9 @@ public class S3 extends Location {
     private static final Logger LOGGER = Logger.getLogger(S3.class.getName());
 
     @DataBoundConstructor
-    public S3(String bucket, String prefix, boolean enabled, String tmpDir, String region, String credentialsId) {
+    public S3(String bucket, boolean enabled, String tmpDir, String region, String credentialsId) {
         super(enabled);
         this.bucket = bucket;
-        this.prefix = prefix;
         this.setTmpDir(tmpDir);
         this.setRegion(region);
         this.setCredentialsId(credentialsId);
@@ -91,7 +84,7 @@ public class S3 extends Location {
     public Iterable<BackupObject> getAvailableBackups() {
         AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
 
-        List<S3ObjectSummary> objectSummarys = client.listObjects(bucket, prefix).getObjectSummaries();
+        List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
         List<String> backupObjectFileNames = new ArrayList<String>();
         List<File> backupObjectFiles = new ArrayList<File>();
         for (S3ObjectSummary objectSummary : objectSummarys) {
@@ -122,9 +115,11 @@ public class S3 extends Location {
         }
 
         // The sorting will be performed according to the timestamp
-        Collections.sort(backupObjectFileNames);
+        return backupObjectFiles.stream()
+                .map(BackupObject.getFromFile()::apply)
+                .sorted(Comparator.comparing(BackupObject::getTimestamp))
+                ::iterator;
 
-        return Iterables.transform(backupObjectFiles, BackupObject.getFromFile());
     }
 
     @Override
@@ -132,10 +127,10 @@ public class S3 extends Location {
         if (this.enabled && isBucketExists()) {
             AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
             for (File archive : archives) {
-                LOGGER.info(archive.getName() + " copying to s3 bucket " + bucket);
-                Path backupPath = Paths.get(prefix, archive.getName());
-                client.putObject(bucket, backupPath.toString(), archive);
-                LOGGER.info(archive.getName() + " copied to s3 bucket " + bucket);
+                String backupPath = Paths.get(prefix, archive.getName()).toString().replace("\\", "/");
+                LOGGER.info(archive.getName() + " copying to s3 bucket " + bucket + " > " + backupPath);
+                client.putObject(bucket, backupPath, archive);
+                LOGGER.info(archive.getName() + " copied to s3 bucket " + bucket + " > " + backupPath);
             }
             File dir = new File(tmpDir);
             if (!dir.isDirectory()) {
@@ -144,11 +139,10 @@ public class S3 extends Location {
                     throw new IOException();
                 }
             }
-            File backupObjectFileDestination = new File(dir, backupObjectFile.getName());
-            Files.copy(backupObjectFile, backupObjectFileDestination);
-            Path backupPath = Paths.get(prefix, backupObjectFile.getName());
-            client.putObject(bucket, backupPath.toString(), backupObjectFileDestination);
-            LOGGER.info(backupObjectFile.getName() + " copied to " + backupObjectFileDestination.getAbsolutePath());
+            String backupPath = Paths.get(prefix, backupObjectFile.getName()).toString().replace("\\", "/");
+            LOGGER.info(backupObjectFile.getName() + " copying to s3 bucket " + bucket + " > " + backupPath);
+            client.putObject(bucket, backupPath, backupObjectFile);
+            LOGGER.info(backupObjectFile.getName() + " copied to " + bucket + " > " + backupPath);
         } else {
             LOGGER.warning("skipping location " + this.bucket + " since it is disabled or it does not exist.");
         }
@@ -161,7 +155,7 @@ public class S3 extends Location {
         AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
 
         List<String> backpFileNames = new ArrayList<String>();
-        List<S3ObjectSummary> objectSummarys = client.listObjects(bucket, prefix).getObjectSummaries();
+        List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
         for (S3ObjectSummary objectSummary : objectSummarys) {
             if (objectSummary.getKey()
                     .contains(Util.getFormattedDate(BackupObject.FILE_TIMESTAMP_PATTERN, backup.getTimestamp()))
@@ -193,13 +187,18 @@ public class S3 extends Location {
         return archivesInTemp;
     }
 
+    private List<S3ObjectSummary> getObjectSummaries(AmazonS3 client) {
+        ObjectListing objectListing = StringUtils.isEmpty(prefix) ? client.listObjects(bucket) : client.listObjects(bucket, prefix);
+        return objectListing.getObjectSummaries();
+    }
+
     @Override
     public void deleteBackupFiles(BackupObject backupObject) {
         LOGGER.info("Deleting backupObject...");
         String filenamePart = Util.generateFileNameBase(backupObject.getTimestamp());
         AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
 
-        List<S3ObjectSummary> objectSummarys = client.listObjects(bucket, prefix).getObjectSummaries();
+        List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
         for (S3ObjectSummary objectSummary : objectSummarys) {
             if (StringUtils.contains(objectSummary.getKey(), filenamePart)) {
                 LOGGER.info("Deleting backupObject..." + objectSummary.getKey());
@@ -210,7 +209,11 @@ public class S3 extends Location {
     }
 
     public String getDisplayName() {
-        return "S3 bucket: " + bucket;
+        if (StringUtils.isEmpty(prefix)) {
+            return "S3 bucket: " + bucket;
+        } else {
+            return "S3 bucket: " + bucket + " > " + prefix;
+        }
     }
 
     @SuppressWarnings("unused")
@@ -243,6 +246,7 @@ public class S3 extends Location {
         return prefix;
     }
 
+    @DataBoundSetter
     public void setPrefix(String prefix) {
         this.prefix = prefix;
     }
@@ -288,7 +292,7 @@ public class S3 extends Location {
         @Restricted(NoExternalUse.class)
         @RestrictedSince("1.4")
         public FormValidation doTestBucket(@QueryParameter String bucket, @QueryParameter String region,
-                @QueryParameter String credentialsId) throws AccessDeniedException {
+                                           @QueryParameter String credentialsId) throws AccessDeniedException {
             Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
             try {
                 return FormValidation.ok(validatePath(bucket, region, credentialsId));

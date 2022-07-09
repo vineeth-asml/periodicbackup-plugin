@@ -43,23 +43,20 @@
                       <j:forEach var="location" items="${it.locations}">
                         <div>
                           <h4>${location.displayName}</h4>
-                                   
+
                           <j:forEach var="backup" items="${location.availableBackups}">
-                            <f:radio name="backupHash" value="${backup.hashCode()}"/>
-                            ${backup.displayName}
-                            <br/>
-                            
+                            <f:radio name="backupHash" value="${backup.hashCode()}" title="${backup.displayName}"/>
                             <j:set var="noBackups" value="false"/>
                           </j:forEach>
                         </div>
-                      </j:forEach> 
-                            
+                      </j:forEach>
+
                       <div>
                         <j:if test="${noBackups == 'false'}">
                           <f:submit value="${%restore.launch}"/>
                         </j:if>
                       </div>
-                            
+
                     </f:form>
                 </j:otherwise>
             </j:choose>
