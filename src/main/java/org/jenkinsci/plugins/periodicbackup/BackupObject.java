@@ -31,6 +31,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Date;
 import jenkins.model.Jenkins;
@@ -97,6 +98,18 @@ public class BackupObject implements Comparable {
     public static Function<String, BackupObject> getFromString() {
         return new Function<String, BackupObject>() {
             public BackupObject apply(String content) {
+                if (content != null) {
+                    return (BackupObject) Jenkins.XSTREAM.fromXML(content);
+                } else {
+                    return null;
+                }
+            }
+        };
+    }
+
+    public static Function<InputStream, BackupObject> getFromInputStream() {
+        return new Function<InputStream, BackupObject>() {
+            public BackupObject apply(InputStream content) {
                 if (content != null) {
                     return (BackupObject) Jenkins.XSTREAM.fromXML(content);
                 } else {
