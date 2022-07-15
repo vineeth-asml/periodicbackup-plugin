@@ -1,0 +1,23 @@
+periodicBackup:
+  cron: "0 8 * * *"
+  cycleDays: 7
+  cycleQuantity: 7
+  fileManagerPlugin: "configOnly"
+  locations:
+    - s3:
+        bucket: "bucket1"
+        credentialsId: "aws-credentials"
+        enabled: true
+        prefix: "prefix1"
+        region: "us-west-2"
+        tmpDir: "/tmp/s3backup"
+    - localDirectory:
+        enabled: true
+        path: "/var/jenkins/backup"
+  storages:
+    - "tarGz"
+    - zip:
+        multiVolume: true
+        volumeSize: 16777216
+    - "null"
+  tempDirectory: "/tmp"

@@ -4,25 +4,28 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 /**
  * Created by IntelliJ IDEA.
  * Author: tblaszcz
  * Date: 15-04-11
  */
-public class NullStorageTest extends HudsonTestCase {
+public class NullStorageTest  {
 
     private String baseFileName;
     private File tempDirectory;
     private NullStorage nullStorage;
     private File archive1;
-
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         baseFileName = "baseFileName";
         nullStorage = new NullStorage();
         tempDirectory = new File(Resources.getResource("data/temp2/").getFile());
@@ -34,6 +37,7 @@ public class NullStorageTest extends HudsonTestCase {
         archive1 = new File(Resources.getResource("data/archive1").getFile());
     }
 
+    @Test
     public void testBackupStop() throws Exception {
         File expectedResult = new File(tempDirectory, baseFileName + ".null");
         assertTrue(archive1.exists());
@@ -46,7 +50,7 @@ public class NullStorageTest extends HudsonTestCase {
         assertEquals(archives.iterator().next(), expectedResult);
 
     }
-
+    @Test
     public void testUnarchiveFiles() throws Exception {
         File sourceDir = new File(Resources.getResource("data/temp/").getFile());
         File newFile = new File(sourceDir, "newFile");

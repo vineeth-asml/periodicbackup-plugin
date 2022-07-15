@@ -5,34 +5,38 @@ import com.google.common.io.Resources;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by IntelliJ IDEA.
  * Author: tblaszcz
  * Date: 19-01-11
  */
-public class ZipStorageTest extends HudsonTestCase {
+public class ZipStorageTest {
 
     private String baseFileName;
     private ZipStorage zipStorage;
     private File tempDirectory;
     private File archive1;
     private File archive2;
-
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         baseFileName = "baseFileName";
         zipStorage = new ZipStorage(false, 0);
         tempDirectory = new File(Resources.getResource("data/temp2/").getFile());
-        if(tempDirectory.exists()) {
+        if (tempDirectory.exists()) {
             FileUtils.deleteDirectory(tempDirectory);
         }
         assertTrue(tempDirectory.mkdir());
@@ -70,7 +74,7 @@ public class ZipStorageTest extends HudsonTestCase {
 
         assertEquals(sizeBefore + 1, sizeAfter);
         assertEquals(filesInArchiveBefore + 1, filesInArchiveAfter);
-        assertEquals (sizeOfFilesInArchiveBefore + sizeOfTheFile, sizeOfFilesInArchiveAfter);
+        assertEquals(sizeOfFilesInArchiveBefore + sizeOfTheFile, sizeOfFilesInArchiveAfter);
 
         zipStorage.backupStop();
     }
@@ -86,7 +90,7 @@ public class ZipStorageTest extends HudsonTestCase {
 
         assertTrue(expectedResult.exists());
 
-        if(!expectedResult.delete()) {
+        if (!expectedResult.delete()) {
             throw new IOException("Could not delete file " + expectedResult.getAbsolutePath());
         }
     }

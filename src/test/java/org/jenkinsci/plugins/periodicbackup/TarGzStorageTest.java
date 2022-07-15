@@ -1,16 +1,19 @@
-
 package org.jenkinsci.plugins.periodicbackup;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -19,20 +22,21 @@ import java.util.List;
  * Date: 14-04-11
  */
 
-public class TarGzStorageTest extends HudsonTestCase {
+public class TarGzStorageTest {
 
     private String baseFileName;
     private TarGzStorage tarGzStorage;
     private File tempDirectory;
     private File archive1;
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         baseFileName = "baseFileName";
         tarGzStorage = new TarGzStorage();
         tempDirectory = new File(Resources.getResource("data/temp/").getFile());
-        if(tempDirectory.exists()) {
+        if (tempDirectory.exists()) {
             FileUtils.deleteDirectory(tempDirectory);
         }
         assertTrue(tempDirectory.mkdir());

@@ -3,8 +3,9 @@ package org.jenkinsci.plugins.periodicbackup;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 
+import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,12 +13,17 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Created by IntelliJ IDEA.
  * Author: tblaszcz
  * Date: 17-01-11
  */
-public class LocalDirectoryTest extends HudsonTestCase {
+public class LocalDirectoryTest {
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
     @Test
     public void testGetAvailableBackups() {
         File path = new File(Resources.getResource("data/").getFile());
@@ -51,8 +57,8 @@ public class LocalDirectoryTest extends HudsonTestCase {
         File[] filesInLocation = destination.listFiles();
         assertTrue(filesInLocation.length == 4);  //2 archives + backup object file + dummy == 4
 
-        for(File f : filesInLocation) {
-            if(!f.delete()) {
+        for (File f : filesInLocation) {
+            if (!f.delete()) {
                 throw new IOException("Could not delete file " + f.getAbsolutePath());
             }
         }
