@@ -1,18 +1,21 @@
 package org.jenkinsci.plugins.periodicbackup;
 
 import com.google.common.io.Resources;
-import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.io.File;
 import java.util.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Created by IntelliJ IDEA.
  * Author: tblaszcz
  * Date: 19-01-11
  */
-public class UtilTest extends TestCase {
+public class UtilTest  {
     @Test
     public void testGetRelativePath() throws Exception {
         File file = new File(Resources.getResource("data/temp/dummy").getFile());

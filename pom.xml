@@ -42,6 +42,32 @@
         </developer>
     </developers>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.jenkins.plugins</groupId>
+                <artifactId>snakeyaml-api</artifactId>
+                <version>1.29.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jenkins-ci.plugins</groupId>
+                <artifactId>jackson2-api</artifactId>
+                <version>2.12.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jenkins-ci.main</groupId>
+                <artifactId>jenkins-test-harness</artifactId>
+                <version>2.71</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.13.2</version>
+            </dependency>
+        </dependencies>
+
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
@@ -70,6 +96,25 @@
             <artifactId>aws-java-sdk-ec2</artifactId>
             <version>1.12.70</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.jenkins</groupId>
+            <artifactId>configuration-as-code</artifactId>
+            <version>${configuration-as-code.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.jenkins.configuration-as-code</groupId>
+            <artifactId>test-harness</artifactId>
+            <version>${configuration-as-code.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>joda-time</groupId>
+                    <artifactId>joda-time</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
     <distributionManagement>
@@ -85,6 +130,7 @@
         <java.level>8</java.level>
 
         <slf4jVersion>1.7.26</slf4jVersion>
+        <configuration-as-code.version>1.51</configuration-as-code.version>
     </properties>
 
     <build>
@@ -111,7 +157,7 @@
             <version>3.6</version>
           </plugin>
         </plugins>
-        
+
     </build>
 
     <reporting>
@@ -188,6 +234,6 @@
             <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
-</project>  
-  
+</project>
+
 
