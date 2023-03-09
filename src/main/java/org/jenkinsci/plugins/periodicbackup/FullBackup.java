@@ -26,58 +26,64 @@ package org.jenkinsci.plugins.periodicbackup;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import hudson.Extension;
-import org.apache.tools.ant.DirectoryScanner;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import java.io.File;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.DirectoryScanner;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 
 /**
- *
  * FullBackup will choose all the files in the Jenkins homedir during the backup.
  * During the restore it will delete all the deletable files in the Jenkins homedir
  * and then it will write with files in the selected backup.
  */
 public class FullBackup extends FileManager {
-	
+    @CheckForNull
+    private final String includesString;
+
     @CheckForNull
     private final String excludesString;
-	private final File baseDir;
-	private final boolean followSymbolicLinks;
+    
+    private final File baseDir;
+    
+    private final boolean followSymbolicLinks;
 
     public FullBackup() {
-        this(null, false);
+        this(null, null, false);
     }
 
     @DataBoundConstructor
-	public FullBackup(@CheckForNull String excludesString, boolean followSymbolicLinks) {
-		this(excludesString, followSymbolicLinks, Jenkins.getActiveInstance().getRootDir());
-	}
+    public FullBackup(@CheckForNull String includesString, @CheckForNull String excludesString,
+            boolean followSymbolicLinks) {
+        this(includesString, excludesString, followSymbolicLinks, Jenkins.get().getRootDir());
+    }
 
     /**
-     * Test Constructor
-     * 
+     * Test Constructor.
+     *
+     * @param includesString Optional list of directories to be included
      * @param excludesString Optional list of directories to be excluded
      * @param baseDir Base directory
      */
-    FullBackup(@CheckForNull String excludesString, boolean followSymbolicLinks, @Nonnull File baseDir) {
-    	super();
-    	this.excludesString = StringUtils.trimToNull(excludesString);
+    FullBackup(@CheckForNull String includesString, @CheckForNull String excludesString,
+                boolean followSymbolicLinks, @Nonnull File baseDir) {
+        super();
+        this.includesString = StringUtils.trimToNull(includesString);
+        this.excludesString = StringUtils.trimToNull(excludesString);
         this.followSymbolicLinks = followSymbolicLinks;
-		this.baseDir = baseDir;
-    	this.restorePolicy = new ReplaceRestorePolicy();
+        this.baseDir = baseDir;
+        this.restorePolicy = new ReplaceRestorePolicy();
     }
-    
-    
+
     public String getDisplayName() {
         return "FullBackup";
     }
@@ -87,21 +93,31 @@ public class FullBackup extends FileManager {
         DirectoryScanner directoryScanner = new DirectoryScanner(); // It will scan all files inside the root directory
         directoryScanner.setFollowSymlinks(followSymbolicLinks);
         directoryScanner.setBasedir(baseDir);
-        directoryScanner.setExcludes(Iterables.toArray(getExcludes(), String.class));
+        directoryScanner.setIncludes(Iterators.toArray(getIncludes(), String.class));
+        directoryScanner.setExcludes(Iterators.toArray(getExcludes(), String.class));
         directoryScanner.scan();
         List<File> files = Lists.newArrayList();
         for (String s : directoryScanner.getIncludedFiles()) {
-          files.add(new File(directoryScanner.getBasedir(), s));
+            files.add(new File(directoryScanner.getBasedir(), s));
         }
         return files;
-      }
-    
-    private Iterable<String> getExcludes() {
-		if (this.excludesString == null) {
-			return Collections.emptyList();
-		}
-		return Lists.newArrayList(Splitter.on(';').trimResults().split(excludesString).iterator());
-	}
+    }
+
+    private Iterator<String> getIncludes() {
+        if (this.includesString == null) {
+            List<String> includes = Lists.newArrayList();
+            includes.add("**");
+            return includes.iterator();
+        }
+        return Splitter.on(';').trimResults().split(this.includesString).iterator();
+    }
+
+    private Iterator<String> getExcludes() {
+        if (this.excludesString == null) {
+            return Collections.emptyListIterator();
+        }
+        return Splitter.on(';').trimResults().split(this.excludesString).iterator();
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -116,8 +132,13 @@ public class FullBackup extends FileManager {
     @Override
     public int hashCode() {
         return 73;
-    }	
-    
+    }
+
+    @CheckForNull
+    public String getIncludesString() {
+        return includesString;
+    }
+
     @CheckForNull
     public String getExcludesString() {
         return excludesString;
