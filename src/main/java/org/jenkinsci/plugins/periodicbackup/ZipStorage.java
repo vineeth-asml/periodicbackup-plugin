@@ -30,7 +30,6 @@ import net.sf.json.JSONObject;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
-import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -208,7 +207,6 @@ public class ZipStorage extends Storage {
     public void unarchiveFiles(Iterable<File> archives, File tempDir) {
         ZipUnArchiver unarchiver = new ZipUnArchiver();
         unarchiver.setDestDirectory(tempDir);
-        unarchiver.enableLogging(new ConsoleLogger(org.codehaus.plexus.logging.Logger.LEVEL_INFO, "UnArchiver"));
 
         // Extracting each archive to the temporary directory
         for(File archive : archives) {
