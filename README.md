@@ -46,20 +46,10 @@ The org.codehaus.plexus.archiver library will be used. The backupStart method in
         File destination = new File(new File(tempDirectoryPath), Util.createFileName(archiveFilenameBase, this.getDescriptor().getArchiveFileExtension()));
         archiver.setDestFile(destination);
 
-        // Set the compression method
-        TarArchiver.TarCompressionMethod compression = new TarArchiver.TarCompressionMethod();
-        try {
-            compression.setValue("gzip");
-        } catch (org.codehaus.plexus.archiver.ArchiverException e) {
-            LOGGER.warning("Cannot set compression value " + e.getMessage());
-        }
-
         // Support long filenames
-        TarLongFileMode fileMode = new TarLongFileMode();
-        fileMode.setValue(TarLongFileMode.GNU);
-        archiver.setLongfile(fileMode);
-
-        archiver.setCompression(compression);
+        archiver.setLongfile(TarLongFileMode.gnu);
+        // Set the compression method
+        archiver.setCompression(TarArchiver.TarCompressionMethod.gzip);
     }
 
 The backupAddFile method will add the files to the archive and backupStop will finalize the backup.
@@ -106,7 +96,6 @@ The basic backup functionality is now ready. Now the restoring needs to be imple
         // Setting up unArchiver
         TarGZipUnArchiver unArchiver = new TarGZipUnArchiver();
         unArchiver.setDestDirectory(tempDir);
-        unArchiver.enableLogging(new ConsoleLogger(org.codehaus.plexus.logging.Logger.LEVEL_INFO, "UnArchiver"));
 
         // Extracting each archive to the temporary directory
         for(File archive : archives) {
@@ -142,3 +131,7 @@ The equals and hashCode methods need to be implemented since the objects will be
     }
 
 Now the TarGzStorage class is ready.
+
+### Update notes for 2.0
+
+Logging configurations for the logger "UnArchiver" should be updated to use the package "org.codehaus.plexus.archiver"
