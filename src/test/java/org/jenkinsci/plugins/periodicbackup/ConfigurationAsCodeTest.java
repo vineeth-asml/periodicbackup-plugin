@@ -6,17 +6,18 @@ import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.File;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-
 public class ConfigurationAsCodeTest {
+
     @Rule
     public JenkinsConfiguredWithCodeRule r = new JenkinsConfiguredWithCodeRule();
 
     @Test
     @ConfiguredWithCode("jcasc/configuration-as-code.yml")
-
 
     public void shouldSupportConfigurationAsCode() throws Exception {
         PeriodicBackupLink target = Jenkins.get().getExtensionList(PeriodicBackupLink.class).get(0);
@@ -41,7 +42,9 @@ public class ConfigurationAsCodeTest {
         assertEquals("/tmp/s3backup", s3.getTmpDir());
         assertTrue(target.getLocations().get(1) instanceof LocalDirectory);
         LocalDirectory localDirectory= (LocalDirectory) target.getLocations().get(1);
-        assertEquals("/var/jenkins/backup", localDirectory.getPath().getPath());
+        // required for platform-agnostic test
+        assertEquals(File.separator + "var" + File.separator + "jenkins" +
+                File.separator + "backup", localDirectory.getPath().getPath());
         assertTrue(localDirectory.enabled);
 
 
