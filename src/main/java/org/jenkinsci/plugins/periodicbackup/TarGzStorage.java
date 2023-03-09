@@ -30,7 +30,6 @@ import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.tar.TarArchiver;
 import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
 import org.codehaus.plexus.archiver.tar.TarLongFileMode;
-import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
@@ -57,20 +56,10 @@ public class TarGzStorage extends Storage {
         File destination = new File(new File(tempDirectoryPath), Util.createFileName(archiveFilenameBase, this.getDescriptor().getArchiveFileExtension()));
         archiver.setDestFile(destination);
 
-        // Set the compression method
-        TarArchiver.TarCompressionMethod compression = new TarArchiver.TarCompressionMethod();
-        try {
-            compression.setValue("gzip");
-        } catch (org.codehaus.plexus.archiver.ArchiverException e) {
-            LOGGER.warning("Cannot set compression value " + e.getMessage());
-        }
-
         // Support long filenames
-        TarLongFileMode fileMode = new TarLongFileMode();
-        fileMode.setValue(TarLongFileMode.GNU);
-        archiver.setLongfile(fileMode);
-
-        archiver.setCompression(compression);
+        archiver.setLongfile(TarLongFileMode.gnu);
+        // Set the compression method
+        archiver.setCompression(TarArchiver.TarCompressionMethod.gzip);
     }
 
     @Override
@@ -99,7 +88,6 @@ public class TarGzStorage extends Storage {
         // Setting up unArchiver
         TarGZipUnArchiver unArchiver = new TarGZipUnArchiver();
         unArchiver.setDestDirectory(tempDir);
-        unArchiver.enableLogging(new ConsoleLogger(org.codehaus.plexus.logging.Logger.LEVEL_INFO, "UnArchiver"));
 
         // Extracting each archive to the temporary directory
         for(File archive : archives) {
