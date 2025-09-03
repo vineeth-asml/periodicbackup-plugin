@@ -49,6 +49,9 @@ class AmazonUtil {
         if (!StringUtils.isEmpty(credentialsId)) {
             builder.setCredentials(getCredentials(credentialsId));
         }
+        if (!StringUtils.isEmpty(endPointUrl)) {
+            builder.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPointUrl, region))
+        }
 
         return builder.build();
     }
