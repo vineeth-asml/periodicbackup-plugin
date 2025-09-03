@@ -51,6 +51,7 @@ class AmazonUtil {
         }
         if (!StringUtils.isEmpty(endPointUrl)) {
             builder.setEndpointConfiguration(new AmazonS3ClientBuilder.EndpointConfiguration(endPointUrl, region));
+            builder.enablePathStyleAccess();
         }
 
         return builder.build();
