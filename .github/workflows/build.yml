@@ -31,7 +31,7 @@ jobs:
         run: mvn --batch-mode --update-snapshots verify
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: periodicbackup-plugin-artifacts
           path: target/*.hpi
