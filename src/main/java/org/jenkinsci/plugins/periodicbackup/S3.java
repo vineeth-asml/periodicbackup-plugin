@@ -65,6 +65,7 @@ import java.util.logging.Logger;
 public class S3 extends Location {
 
     private String bucket;
+    private String endPointUrl;
     private String prefix;
     private String tmpDir;
     private String region;
