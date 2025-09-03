@@ -73,9 +73,10 @@ public class S3 extends Location {
     private static final Logger LOGGER = Logger.getLogger(S3.class.getName());
 
     @DataBoundConstructor
-    public S3(String bucket, boolean enabled, String tmpDir, String region, String credentialsId) {
+    public S3(String bucket, boolean enabled, String tmpDir, String region, String credentialsId, String endPointUrl) {
         super(enabled);
         this.bucket = bucket;
+        this.endPointUrl = endPointUrl;
         this.setTmpDir(tmpDir);
         this.setRegion(region);
         this.setCredentialsId(credentialsId);
@@ -83,7 +84,7 @@ public class S3 extends Location {
 
     @Override
     public Iterable<BackupObject> getAvailableBackups() {
-        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
 
         List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
         return objectSummarys
@@ -125,7 +126,7 @@ public class S3 extends Location {
     @Override
     public void storeBackupInLocation(Iterable<File> archives, File backupObjectFile) throws IOException {
         if (this.enabled && isBucketExists()) {
-            AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+            AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
             for (File archive : archives) {
                 String backupPath = Paths.get(prefix, archive.getName()).toString().replace("\\", "/");
                 LOGGER.info(archive.getName() + " copying to s3 bucket " + bucket + " > " + backupPath);
@@ -151,7 +152,7 @@ public class S3 extends Location {
     @Override
     public Iterable<File> retrieveBackupFromLocation(final BackupObject backup, File tempDir)
             throws IOException, PeriodicBackupException {
-        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
 
         List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
         return objectSummarys
@@ -193,7 +194,7 @@ public class S3 extends Location {
     public void deleteBackupFiles(BackupObject backupObject) {
         LOGGER.info("Deleting backupObject...");
         String filenamePart = Util.generateFileNameBase(backupObject.getTimestamp());
-        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
 
         List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
         for (S3ObjectSummary objectSummary : objectSummarys) {
@@ -234,7 +235,7 @@ public class S3 extends Location {
     }
 
     private boolean isBucketExists() {
-        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
 
         return client.doesBucketExistV2(bucket);
     }
@@ -303,7 +304,7 @@ public class S3 extends Location {
         }
 
         private String validatePath(String bucket, String region, String credentialsId) throws FormValidation {
-            AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId);
+            AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
             if (!client.doesBucketExistV2(bucket)) {
                 throw FormValidation.error(bucket + " doesn't exist or I don't have access to it!");
             }
