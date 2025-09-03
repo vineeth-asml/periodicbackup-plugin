@@ -39,7 +39,7 @@ import jenkins.model.Jenkins;
 
 class AmazonUtil {
 
-    static AmazonS3 getAmazonS3Client(String region, String credentialsId, String endPointUrl) {
+    static AmazonS3 getAmazonS3Client(String region, String credentialsId, String endPointUrl, boolean forcePathStyle) {
         AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
         // Use credentials if provided. If not, it'll use the credentials in aws profile
         // ~/.aws from host
@@ -51,6 +51,8 @@ class AmazonUtil {
         }
         if (!StringUtils.isEmpty(endPointUrl)) {
             builder.setEndpointConfiguration(new AmazonS3ClientBuilder.EndpointConfiguration(endPointUrl, region));
+        }
+        if(forcePathStyle){
             builder.enablePathStyleAccess();
         }
 

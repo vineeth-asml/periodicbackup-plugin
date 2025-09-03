@@ -70,12 +70,14 @@ public class S3 extends Location {
     private String tmpDir;
     private String region;
     private String credentialsId;
+    private boolean forcePathStyle;
 
     private static final Logger LOGGER = Logger.getLogger(S3.class.getName());
 
     @DataBoundConstructor
-    public S3(String bucket, boolean enabled, String tmpDir, String region, String credentialsId, String endPointUrl) {
+    public S3(String bucket, boolean enabled, boolean forcePathStyle, String tmpDir, String region, String credentialsId, String endPointUrl) {
         super(enabled);
+        this.forcePathStyle= forcePathStyle;
         this.bucket = bucket;
         this.endPointUrl = endPointUrl;
         this.setTmpDir(tmpDir);
@@ -85,7 +87,7 @@ public class S3 extends Location {
 
     @Override
     public Iterable<BackupObject> getAvailableBackups() {
-        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl, forcePathStyle);
 
         List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
         return objectSummarys
@@ -127,7 +129,7 @@ public class S3 extends Location {
     @Override
     public void storeBackupInLocation(Iterable<File> archives, File backupObjectFile) throws IOException {
         if (this.enabled && isBucketExists()) {
-            AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
+            AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl, forcePathStyle);
             for (File archive : archives) {
                 String backupPath = Paths.get(prefix, archive.getName()).toString().replace("\\", "/");
                 LOGGER.info(archive.getName() + " copying to s3 bucket " + bucket + " > " + backupPath);
@@ -153,7 +155,7 @@ public class S3 extends Location {
     @Override
     public Iterable<File> retrieveBackupFromLocation(final BackupObject backup, File tempDir)
             throws IOException, PeriodicBackupException {
-        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl, forcePathStyle);
 
         List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
         return objectSummarys
@@ -195,7 +197,7 @@ public class S3 extends Location {
     public void deleteBackupFiles(BackupObject backupObject) {
         LOGGER.info("Deleting backupObject...");
         String filenamePart = Util.generateFileNameBase(backupObject.getTimestamp());
-        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl, forcePathStyle);
 
         List<S3ObjectSummary> objectSummarys = getObjectSummaries(client);
         for (S3ObjectSummary objectSummary : objectSummarys) {
@@ -236,8 +238,7 @@ public class S3 extends Location {
     }
 
     private boolean isBucketExists() {
-        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
-
+        AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl, forcePathStyle);
         return client.doesBucketExistV2(bucket);
     }
 
@@ -264,6 +265,15 @@ public class S3 extends Location {
 
     public String getEndPointUrl() {
         return endPointUrl;
+    }
+
+    @DataBoundSetter
+    public void setforcePathStyle(boolean forcePathStyle) {
+        this.forcePathStyle = forcePathStyle;
+    }
+
+    public boolean getforcePathStyle() {
+        return forcePathStyle;
     }
 
     @DataBoundSetter
@@ -304,17 +314,17 @@ public class S3 extends Location {
         @Restricted(NoExternalUse.class)
         @RestrictedSince("1.4")
         public FormValidation doTestBucket(@QueryParameter String bucket, @QueryParameter String region,
-                                           @QueryParameter String credentialsId, @QueryParameter String endPointUrl) throws AccessDeniedException {
+                                           @QueryParameter String credentialsId, @QueryParameter String endPointUrl, @QueryParameter boolean forcePathStyle) throws AccessDeniedException {
             Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
             try {
-                return FormValidation.ok(validatePath(bucket, region, credentialsId, endPointUrl));
+                return FormValidation.ok(validatePath(bucket, region, credentialsId, endPointUrl,forcePathStyle));
             } catch (FormValidation f) {
                 return f;
             }
         }
 
-        private String validatePath(String bucket, String region, String credentialsId, @QueryParameter String endPointUrl) throws FormValidation {
-            AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
+        private String validatePath(String bucket, String region, String credentialsId, @QueryParameter String endPointUrl, @QueryParameter boolean forcePathStyle) throws FormValidation {
+            AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl, forcePathStyle);
             if (!client.doesBucketExistV2(bucket)) {
                 throw FormValidation.error(bucket + " doesn't exist or I don't have access to it!");
             }

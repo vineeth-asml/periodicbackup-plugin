@@ -5,6 +5,7 @@ periodicBackup:
   fileManagerPlugin: "configOnly"
   locations:
     - s3:
+        endPointUrl: "https://s3.example.com"
         bucket: "bucket1"
         credentialsId: "aws-credentials"
         enabled: true

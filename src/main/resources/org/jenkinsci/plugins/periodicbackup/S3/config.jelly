@@ -30,12 +30,18 @@
 
     <f:entry title="${%endPointUrl.title}" field="endPointUrl">
         <f:textbox/>
+        <f:help file="help-endPointUrl.html"/>
     </f:entry>
     <f:entry title="${%backupS3Bucket.title}" field="bucket">
         <f:textbox/>
     </f:entry>
     <f:entry title="${%backupS3BucketPrefix.title}" field="prefix">
         <f:textbox/>
+    </f:entry>
+    <f:entry field="forcePathStyle">
+        <f:checkbox/>
+        <label class="attach-previous">${%forcePathStyle.label}</label>
+        <f:help file="help-forcePathStyle.html"/>
     </f:entry>
     <f:entry title="${%region.title}" field="region">
         <f:select/>
@@ -49,7 +55,7 @@
     </f:entry>
     <f:validateButton
             title="${%validateButton.title}" progress="${%validateButton.progress}"
-            method="testBucket" with="bucket,region,credentialsId,endPointUrl"/>
+            method="testBucket" with="bucket,region,credentialsId,endPointUrl,forcePathStyle"/>
     <f:entry title="${%tmpDir.title}" field="tmpDir">
         <f:textbox default="/tmp/s3backup"/>
     </f:entry>
