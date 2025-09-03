@@ -298,7 +298,7 @@ public class S3 extends Location {
                                            @QueryParameter String credentialsId, @QueryParameter String endPointUrl) throws AccessDeniedException {
             Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
             try {
-                return FormValidation.ok(validatePath(bucket, region, credentialsId));
+                return FormValidation.ok(validatePath(bucket, region, credentialsId, endPointUrl));
             } catch (FormValidation f) {
                 return f;
             }
