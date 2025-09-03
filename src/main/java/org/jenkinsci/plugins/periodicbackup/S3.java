@@ -262,6 +262,15 @@ public class S3 extends Location {
         return credentialsId;
     }
 
+    public String getEndPointUrl() {
+        return endPointUrl;
+    }
+
+    @DataBoundSetter
+    public void setEndPointUrl(String endPointUrl) {
+        this.endPointUrl = endPointUrl;
+    }
+
     public void setCredentialsId(String credentialsId) {
         this.credentialsId = credentialsId;
     }
