@@ -295,7 +295,7 @@ public class S3 extends Location {
         @Restricted(NoExternalUse.class)
         @RestrictedSince("1.4")
         public FormValidation doTestBucket(@QueryParameter String bucket, @QueryParameter String region,
-                                           @QueryParameter String credentialsId) throws AccessDeniedException {
+                                           @QueryParameter String credentialsId, @QueryParameter String endPointUrl) throws AccessDeniedException {
             Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
             try {
                 return FormValidation.ok(validatePath(bucket, region, credentialsId));
@@ -304,7 +304,7 @@ public class S3 extends Location {
             }
         }
 
-        private String validatePath(String bucket, String region, String credentialsId) throws FormValidation {
+        private String validatePath(String bucket, String region, String credentialsId, @QueryParameter String endPointUrl) throws FormValidation {
             AmazonS3 client = AmazonUtil.getAmazonS3Client(region, credentialsId, endPointUrl);
             if (!client.doesBucketExistV2(bucket)) {
                 throw FormValidation.error(bucket + " doesn't exist or I don't have access to it!");
